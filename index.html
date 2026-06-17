@@ -141,15 +141,15 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, push, onValue, off } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // Serveur de test ouvert à tous configuré pour l'exemple
+        // Insertion automatique de ton lien Firebase personnel
         const firebaseConfig = {
-            databaseURL: "https://rtdb-public-demo-default-rtdb.firebaseio.com/"
+            databaseURL: "https://appp-pixel-art-default-rtdb.europe-west1.firebasedatabase.app/"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Paramètres généraux
+        // Paramètres de la grille
         const GRID_SIZE = 24;
         let currentRoom = 'general';
         let isDrawing = false;
@@ -160,7 +160,7 @@
         const storiesBox = document.getElementById('stories-box');
         const statusBadge = document.getElementById('status-badge');
 
-        // Initialisation de la grille visuelle HTML
+        // Génération de la grille
         gridContainer.style.gridTemplateColumns = `repeat(${GRID_SIZE}, 16px)`;
         gridContainer.style.gridTemplateRows = `repeat(${GRID_SIZE}, 16px)`;
         
@@ -186,28 +186,27 @@
             set(ref(db, `rooms/${currentRoom}/pixels/${index}`), color);
         }
 
-        // Système de synchronisation dynamique selon le salon
+        // Connexion et synchronisation des salons
         function connectToRoom(roomName) {
             statusBadge.innerText = "Synchronisation...";
             
-            // Désactiver les anciens canaux du salon précédent
             off(ref(db, `rooms/${currentRoom}/pixels`));
             off(ref(db, `rooms/${currentRoom}/chat`));
             off(ref(db, `rooms/${currentRoom}/stories`));
 
             currentRoom = roomName;
 
-            // 1. Écoute des Pixels en temps réel
+            // Chargement des pixels en direct
             onValue(ref(db, `rooms/${currentRoom}/pixels`), (snapshot) => {
                 const data = snapshot.val() || {};
                 const pixels = document.querySelectorAll('.pixel');
                 pixels.forEach((px, idx) => {
                     px.style.backgroundColor = data[idx] || '#ffffff';
                 });
-                statusBadge.innerText = "Connecté au salon !";
+                statusBadge.innerText = "Connecté en ligne !";
             });
 
-            // 2. Écoute du Chat en temps réel
+            // Chargement du chat en direct
             onValue(ref(db, `rooms/${currentRoom}/chat`), (snapshot) => {
                 chatBox.innerHTML = '';
                 const data = snapshot.val() || {};
@@ -220,14 +219,14 @@
                 chatBox.scrollTop = chatBox.scrollHeight;
             });
 
-            // 3. Écoute de la Bibliothèque d'histoires en temps réel
+            // Chargement de la bibliothèque en direct
             onValue(ref(db, `rooms/${currentRoom}/stories`), (snapshot) => {
                 storiesBox.innerHTML = '';
                 const data = snapshot.val() || {};
-                const list = Object.values(data).reverse(); // Afficher les plus récentes en premier
+                const list = Object.values(data).reverse();
                 
                 if (list.length === 0) {
-                    storiesBox.innerHTML = `<p style="color:#999; font-size:14px; font-style:italic;">Aucune histoire dans ce salon pour le moment. Soyez le premier !</p>`;
+                    storiesBox.innerHTML = `<p style="color:#999; font-size:14px; font-style:italic;">Aucune histoire publiée ici pour le moment. Lisez ou écrivez la première !</p>`;
                     return;
                 }
 
@@ -244,7 +243,7 @@
             });
         }
 
-        // Actions utilisateurs : Envoyer un message chat
+        // Actions Chat
         function sendChat() {
             const input = document.getElementById('chat-input');
             const text = input.value.trim();
@@ -257,7 +256,7 @@
         document.getElementById('btn-send').addEventListener('click', sendChat);
         document.getElementById('chat-input').addEventListener('keypress', (e) => { if(e.key === 'Enter') sendChat(); });
 
-        // Actions utilisateurs : Publier une histoire
+        // Actions Bibliothèque
         document.getElementById('btn-publish').addEventListener('click', () => {
             const titleInput = document.getElementById('story-title');
             const contentInput = document.getElementById('story-content');
@@ -267,29 +266,28 @@
             const author = document.getElementById('username-input').value.trim() || "Anonyme";
 
             if(!title || !content) {
-                alert("Veuillez remplir le titre et le contenu de votre histoire.");
+                alert("Remplis le titre et l'histoire avant de publier !");
                 return;
             }
 
             push(ref(db, `rooms/${currentRoom}/stories`), { title, content, author });
             titleInput.value = '';
             contentInput.value = '';
-            alert("Histoire publiée avec succès !");
+            alert("Ton histoire a été publiée dans la bibliothèque globale !");
         });
 
-        // Vider la grille complète du salon actuel
+        // Vider le canvas
         document.getElementById('btn-clear').addEventListener('click', () => {
-            if(confirm("Voulez-vous réinitialiser le dessin de ce salon ?")) {
+            if(confirm("Effacer tout le dessin de ce salon pour TOUT LE MONDE ?")) {
                 set(ref(db, `rooms/${currentRoom}/pixels`), null);
             }
         });
 
-        // Changement de salon via le menu déroulant
         document.getElementById('room-select').addEventListener('change', (e) => {
             connectToRoom(e.target.value);
         });
 
-        // Gestionnaire de flux Caméra/FaceTime local
+        // Activation de la caméra locale
         document.getElementById('btn-camera').addEventListener('click', async () => {
             if (!localStream) {
                 try {
@@ -298,7 +296,7 @@
                     document.getElementById('btn-camera').innerText = "🛑 Couper ma caméra";
                     document.getElementById('btn-camera').classList.replace('success', 'danger');
                 } catch (err) {
-                    alert("Impossible d'accéder à la caméra : " + err.message);
+                    alert("Erreur de caméra : " + err.message);
                 }
             } else {
                 localStream.getTracks().forEach(track => track.stop());
@@ -313,12 +311,11 @@
             return str.replace(/[&<>'"]/g, t => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[t] || t));
         }
 
-        // Lancement immédiat sur le salon général
         connectToRoom('general');
     </script>
 
     <script>
-        // Gestion de l'affichage des onglets
+        // Gestion des onglets
         function switchTab(tabName) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.view-panel').forEach(panel => panel.classList.remove('active'));
@@ -326,7 +323,6 @@
             document.getElementById(`panel-${tabName}`).classList.add('active');
             event.currentTarget.classList.add('active');
 
-            // Cacher ou afficher le sélecteur de couleurs selon l'intérêt de l'onglet
             const colorGroup = document.getElementById('color-group');
             if (tabName === 'draw') {
                 colorGroup.style.display = 'flex';
