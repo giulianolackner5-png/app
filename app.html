@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Art Social & Histoires</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #f0f2f5; margin: 0; padding: 15px; display: flex; flex-direction: column; height: 100vh; }
+        
+        header { background: #007bff; color: white; padding: 10px 20px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        header h1 { margin: 0; font-size: 20px; }
+
+        .setup-panel { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 15px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center; }
+        .setup-group { display: flex; align-items: center; gap: 8px; }
+        input, select, button, textarea { padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+        button { background: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        button:hover { background: #0056b3; }
+        button.danger { background: #dc3545; }
+        button.danger:hover { background: #bd2130; }
+        button.success { background: #28a745; }
+        button.success:hover { background: #218838; }
+
+        /* Navigation par Onglets */
+        .tabs { display: flex; gap: 10px; margin-bottom: 15px; }
+        .tab-btn { background: #e4e6eb; color: #333; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: 600; }
+        .tab-btn.active { background: #007bff; color: white; }
+
+        .main-content { display: flex; gap: 15px; flex: 1; min-height: 0; }
+        .view-panel { display: none; flex: 2; background: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); min-height: 0; overflow-y: auto; }
+        .view-panel.active { display: flex; flex-direction: column; }
+
+        /* Onglet Dessin */
+        .canvas-container { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; }
+        #pixel-grid { display: grid; background: #ddd; gap: 1px; border: 1px solid #999; }
+        .pixel { width: 16px; height: 16px; background: white; cursor: crosshair; }
+        .limit-alert { color: #dc3545; font-size: 13px; font-weight: bold; margin-top: 10px; display: none; }
+
+        /* Onglet Bibliothèque */
+        .story-creator { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 20px; }
+        .story-creator textarea { resize: vertical; height: 80px; }
+        .stories-list { display: flex; flex-direction: column; gap: 15px; }
+        .story-card { background: #f8f9fa; border-left: 4px solid #007bff; padding: 15px; border-radius: 4px; }
+        .story-card h4 { margin: 0 0 5px 0; color: #333; }
+        .story-card p { margin: 0 0 10px 0; font-size: 14px; color: #555; }
+        .story-meta { font-size: 12px; color: #777; font-style: italic; }
+
+        /* Onglet FaceTime/Live */
+        .video-container { display: flex; flex-direction: column; align-items: center; gap: 15px; justify-content: center; flex: 1; }
+        .video-box { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; }
+        video { width: 280px; height: 210px; background: #333; border-radius: 8px; transform: scaleX(-1); object-fit: cover; }
+
+        /* Barre latérale droite (Chat global fixe) */
+        .sidebar { flex: 1; max-width: 320px; display: flex; flex-direction: column; background: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); min-height: 0; }
+        .chat-messages { flex: 1; overflow-y: auto; border: 1px solid #eee; padding: 10px; border-radius: 4px; margin-bottom: 10px; background: #fafafa; }
+        .chat-input-group { display: flex; gap: 5px; }
+        .chat-input-group input { flex: 1; }
+        .msg { margin-bottom: 8px; font-size: 13px; line-height: 1.4; word-break: break-word; }
+        .msg-user { font-weight: bold; color: #007bff; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🚀 CréaWorld Multi-Salons</h1>
+        <div id="status-badge" style="font-size: 13px; background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 4px;">Connexion...</div>
+    </header>
+
+    <div class="setup-panel">
+        <div class="setup-group">
+            <label>Mon Pseudo :</label>
+            <input type="text" id="username-input" value="ArtisteAnonyme" maxlength="15">
+        </div>
+        <div class="setup-group">
+            <label>Salon Actuel :</label>
+            <select id="room-select">
+                <option value="general">Salon Principal (Public)</option>
+                <option value="zone_libre">La Zone Libre</option>
+                <option value="pixel_expert">Pixel Art Pro</option>
+            </select>
+        </div>
+        <div class="setup-group" id="color-group">
+            <label>Couleur :</label>
+            <input type="color" id="color-picker" value="#000000">
+        </div>
+        <button id="btn-clear" class="danger" style="margin-left: auto;">Vider la grille</button>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('draw')">✏️ Dessin Collaboratif</button>
+        <button class="tab-btn" onclick="switchTab('library')">📚 Bibliothèque d'Histoires</button>
+        <button class="tab-btn" onclick="switchTab('live')">📹 FaceTime & Live</button>
+    </div>
+
+    <div class="main-content">
+        
+        <div id="panel-draw" class="view-panel active">
+            <div class="canvas-container">
+                <div id="pixel-grid"></div>
+                <div id="limit-msg" class="limit-alert">⚠️ Mode observation uniquement.</div>
+            </div>
+        </div>
+
+        <div id="panel-library" class="view-panel">
+            <h3>📖 Écrire & Partager une histoire</h3>
+            <div class="story-creator">
+                <input type="text" id="story-title" placeholder="Titre de ton histoire..." maxlength="40">
+                <textarea id="story-content" placeholder="Raconte ton aventure ici..." maxlength="500"></textarea>
+                <button id="btn-publish" class="success">Publier dans la bibliothèque</button>
+            </div>
+            <h3>📚 Histoires de la communauté</h3>
+            <div class="stories-list" id="stories-box"></div>
+        </div>
+
+        <div id="panel-live" class="view-panel">
+            <h3>📹 Espace FaceTime & Diffusion</h3>
+            <div class="video-container">
+                <p style="text-align: center; color: #666; font-size: 14px;">Activez votre caméra pour rejoindre le flux vidéo du salon.</p>
+                <button id="btn-camera" class="success">📹 Activer ma caméra</button>
+                <div class="video-box">
+                    <div>
+                        <div style="font-size: 12px; margin-bottom: 4px; font-weight: bold;">Ma Caméra :</div>
+                        <video id="local-video" autoplay playsinline muted></video>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <h3>💬 Chat du Salon</h3>
+            <div class="chat-messages" id="chat-box"></div>
+            <div class="chat-input-group">
+                <input type="text" id="chat-input" placeholder="Écrire un message..." maxlength="100">
+                <button id="btn-send">Envoyer</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set, push, onValue, off } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // Serveur de test ouvert à tous configuré pour l'exemple
+        const firebaseConfig = {
+            databaseURL: "https://rtdb-public-demo-default-rtdb.firebaseio.com/"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Paramètres généraux
+        const GRID_SIZE = 24;
+        let currentRoom = 'general';
+        let isDrawing = false;
+        let localStream = null;
+
+        const gridContainer = document.getElementById('pixel-grid');
+        const chatBox = document.getElementById('chat-box');
+        const storiesBox = document.getElementById('stories-box');
+        const statusBadge = document.getElementById('status-badge');
+
+        // Initialisation de la grille visuelle HTML
+        gridContainer.style.gridTemplateColumns = `repeat(${GRID_SIZE}, 16px)`;
+        gridContainer.style.gridTemplateRows = `repeat(${GRID_SIZE}, 16px)`;
+        
+        for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
+            const pixel = document.createElement('div');
+            pixel.classList.add('pixel');
+            pixel.dataset.index = i;
+
+            pixel.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                isDrawing = true;
+                drawPixel(i);
+            });
+            pixel.addEventListener('mouseover', () => {
+                if (isDrawing) drawPixel(i);
+            });
+            gridContainer.appendChild(pixel);
+        }
+        window.addEventListener('mouseup', () => isDrawing = false);
+
+        function drawPixel(index) {
+            const color = document.getElementById('color-picker').value;
+            set(ref(db, `rooms/${currentRoom}/pixels/${index}`), color);
+        }
+
+        // Système de synchronisation dynamique selon le salon
+        function connectToRoom(roomName) {
+            statusBadge.innerText = "Synchronisation...";
+            
+            // Désactiver les anciens canaux du salon précédent
+            off(ref(db, `rooms/${currentRoom}/pixels`));
+            off(ref(db, `rooms/${currentRoom}/chat`));
+            off(ref(db, `rooms/${currentRoom}/stories`));
+
+            currentRoom = roomName;
+
+            // 1. Écoute des Pixels en temps réel
+            onValue(ref(db, `rooms/${currentRoom}/pixels`), (snapshot) => {
+                const data = snapshot.val() || {};
+                const pixels = document.querySelectorAll('.pixel');
+                pixels.forEach((px, idx) => {
+                    px.style.backgroundColor = data[idx] || '#ffffff';
+                });
+                statusBadge.innerText = "Connecté au salon !";
+            });
+
+            // 2. Écoute du Chat en temps réel
+            onValue(ref(db, `rooms/${currentRoom}/chat`), (snapshot) => {
+                chatBox.innerHTML = '';
+                const data = snapshot.val() || {};
+                Object.values(data).slice(-40).forEach(msg => {
+                    const div = document.createElement('div');
+                    div.classList.add('msg');
+                    div.innerHTML = `<span class="msg-user">${escapeHTML(msg.user)}:</span> ${escapeHTML(msg.text)}`;
+                    chatBox.appendChild(div);
+                });
+                chatBox.scrollTop = chatBox.scrollHeight;
+            });
+
+            // 3. Écoute de la Bibliothèque d'histoires en temps réel
+            onValue(ref(db, `rooms/${currentRoom}/stories`), (snapshot) => {
+                storiesBox.innerHTML = '';
+                const data = snapshot.val() || {};
+                const list = Object.values(data).reverse(); // Afficher les plus récentes en premier
+                
+                if (list.length === 0) {
+                    storiesBox.innerHTML = `<p style="color:#999; font-size:14px; font-style:italic;">Aucune histoire dans ce salon pour le moment. Soyez le premier !</p>`;
+                    return;
+                }
+
+                list.forEach(story => {
+                    const card = document.createElement('div');
+                    card.classList.add('story-card');
+                    card.innerHTML = `
+                        <h4>📚 ${escapeHTML(story.title)}</h4>
+                        <p>${escapeHTML(story.content).replace(/\n/g, '<br>')}</p>
+                        <div class="story-meta">Par ${escapeHTML(story.author)}</div>
+                    `;
+                    storiesBox.appendChild(card);
+                });
+            });
+        }
+
+        // Actions utilisateurs : Envoyer un message chat
+        function sendChat() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if(!text) return;
+
+            const user = document.getElementById('username-input').value.trim() || "Anonyme";
+            push(ref(db, `rooms/${currentRoom}/chat`), { user, text });
+            input.value = '';
+        }
+        document.getElementById('btn-send').addEventListener('click', sendChat);
+        document.getElementById('chat-input').addEventListener('keypress', (e) => { if(e.key === 'Enter') sendChat(); });
+
+        // Actions utilisateurs : Publier une histoire
+        document.getElementById('btn-publish').addEventListener('click', () => {
+            const titleInput = document.getElementById('story-title');
+            const contentInput = document.getElementById('story-content');
+            
+            const title = titleInput.value.trim();
+            const content = contentInput.value.trim();
+            const author = document.getElementById('username-input').value.trim() || "Anonyme";
+
+            if(!title || !content) {
+                alert("Veuillez remplir le titre et le contenu de votre histoire.");
+                return;
+            }
+
+            push(ref(db, `rooms/${currentRoom}/stories`), { title, content, author });
+            titleInput.value = '';
+            contentInput.value = '';
+            alert("Histoire publiée avec succès !");
+        });
+
+        // Vider la grille complète du salon actuel
+        document.getElementById('btn-clear').addEventListener('click', () => {
+            if(confirm("Voulez-vous réinitialiser le dessin de ce salon ?")) {
+                set(ref(db, `rooms/${currentRoom}/pixels`), null);
+            }
+        });
+
+        // Changement de salon via le menu déroulant
+        document.getElementById('room-select').addEventListener('change', (e) => {
+            connectToRoom(e.target.value);
+        });
+
+        // Gestionnaire de flux Caméra/FaceTime local
+        document.getElementById('btn-camera').addEventListener('click', async () => {
+            if (!localStream) {
+                try {
+                    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                    document.getElementById('local-video').srcObject = localStream;
+                    document.getElementById('btn-camera').innerText = "🛑 Couper ma caméra";
+                    document.getElementById('btn-camera').classList.replace('success', 'danger');
+                } catch (err) {
+                    alert("Impossible d'accéder à la caméra : " + err.message);
+                }
+            } else {
+                localStream.getTracks().forEach(track => track.stop());
+                document.getElementById('local-video').srcObject = null;
+                localStream = null;
+                document.getElementById('btn-camera').innerText = "📹 Activer ma caméra";
+                document.getElementById('btn-camera').classList.replace('danger', 'success');
+            }
+        });
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, t => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[t] || t));
+        }
+
+        // Lancement immédiat sur le salon général
+        connectToRoom('general');
+    </script>
+
+    <script>
+        // Gestion de l'affichage des onglets
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.view-panel').forEach(panel => panel.classList.remove('active'));
+            
+            document.getElementById(`panel-${tabName}`).classList.add('active');
+            event.currentTarget.classList.add('active');
+
+            // Cacher ou afficher le sélecteur de couleurs selon l'intérêt de l'onglet
+            const colorGroup = document.getElementById('color-group');
+            if (tabName === 'draw') {
+                colorGroup.style.display = 'flex';
+            } else {
+                colorGroup.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
