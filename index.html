@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CréaWorld Ultimate - EN LIGNE</title>
+    <title>CréaWorld Ultimate - MESSENGER EDITION</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: #f0f2f5; margin: 0; padding: 15px; display: flex; flex-direction: column; height: 100vh; }
@@ -13,7 +13,6 @@
         .auth-box { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 350px; text-align: center; }
         
         #maintenance-screen { position: fixed; top:0; left:0; width:100vw; height:100vh; background:#24292e; color: white; display:none; flex-direction:column; align-items:center; justify-content:center; z-index:99998; text-align: center; padding: 20px; }
-        .maintenance-box { background: #2f363d; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); max-width: 500px; }
 
         header { background: #24292e; color: white; padding: 10px 20px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
         header h1 { margin: 0; font-size: 20px; }
@@ -27,7 +26,6 @@
         button.success { background: #28a745; }
         button.purple { background: #6f42c1; }
         button.secondary { background: #6c757d; }
-        button.secondary:hover { background: #5a6268; }
 
         .countdown-container { background: #ffc107; color: black; padding: 6px 12px; border-radius: 4px; font-weight: bold; font-family: monospace; font-size: 14px; display: flex; align-items: center; gap: 5px; }
 
@@ -36,102 +34,91 @@
         .tab-btn.active { background: #007bff; color: white; }
 
         .main-content { display: flex; gap: 15px; flex: 1; min-height: 0; }
-        .view-panel { display: none; flex: 2; background: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); min-height: 0; overflow-y: auto; }
+        .view-panel { display: none; flex: 1.2; background: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); min-height: 0; overflow-y: auto; }
         .view-panel.active { display: flex; flex-direction: column; }
 
         .canvas-container { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; overflow: auto; background: #fafafa; border-radius: 6px; padding: 10px; }
         #pixel-grid { display: grid; background: #ddd; gap: 1px; border: 1px solid #999; }
         .pixel { width: 10px; height: 10px; background: white; cursor: crosshair; }
 
-        .sidebar { flex: 1; max-width: 300px; display: flex; flex-direction: column; background: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); min-height: 0; }
-        .chat-messages { flex: 1; overflow-y: auto; border: 1px solid #eee; padding: 10px; border-radius: 4px; margin-bottom: 10px; background: #fafafa; }
-        .msg { margin-bottom: 8px; font-size: 13px; word-break: break-word; }
-        .msg-user { font-weight: bold; color: #007bff; cursor: pointer; }
-        .msg-mention { background: #fff3cd; padding: 2px 4px; border-radius: 3px; font-weight: bold; color: #856404; }
-        .chat-img { max-width: 100%; max-height: 150px; border-radius: 6px; display: block; margin-top: 5px; }
+        .sidebar { flex: 1.5; min-width: 400px; display: flex; flex-direction: column; background: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); min-height: 0; }
+        .chat-tabs { display: flex; gap: 5px; margin-bottom: 10px; border-bottom: 2px solid #eee; padding-bottom: 8px; }
+        .chat-tab { background: #f0f2f5; font-size: 12px; padding: 6px 12px; border-radius: 6px; cursor: pointer; border: none; font-weight: bold; }
+        .chat-tab.active { background: #007bff; color: white; }
+        
+        .chat-messages { flex: 2; overflow-y: auto; border: 1px solid #eee; padding: 10px; border-radius: 4px; margin-bottom: 10px; background: #fafafa; display: flex; flex-direction: column; }
+        .msg { margin-bottom: 10px; padding: 8px; border-radius: 8px; background: #e4e6eb; max-width: 85%; align-self: flex-start; font-size: 13px; }
+        .msg.me { background: #007bff; color: white; align-self: flex-end; }
+        .msg.me .msg-user { color: #fff; }
+        .msg-user { font-weight: bold; color: #007bff; display: block; margin-bottom: 3px; cursor: pointer; }
+        .msg-media { max-width: 100%; max-height: 200px; border-radius: 6px; margin-top: 5px; display: block; }
 
-        .story-card { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 6px; padding: 12px; margin-bottom: 10px; position: relative; }
-        .story-num { font-weight: bold; color: #007bff; margin-right: 5px; }
-        
-        .badge-admin { background: #dc3545; color: white; padding: 2px 5px; font-size: 10px; border-radius: 3px; margin-right: 4px; font-weight: bold; }
-        .badge-guest { background: #6c757d; color: white; padding: 2px 5px; font-size: 10px; border-radius: 3px; margin-right: 4px; font-weight: bold; }
+        .friends-section { flex: 1; border-top: 2px solid #eee; padding-top: 10px; display: flex; flex-direction: column; min-height: 180px; }
+        .friends-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; margin-top: 5px; }
+        .friend-item { display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; padding: 6px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; border: 1px solid #e9ecef; }
+        .friend-item:hover { background: #e4e6eb; }
+
+        .gif-picker-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 10000; width: 90%; max-width: 400px; display: none; flex-direction: column; gap: 10px; }
+        .gif-grid { display: grid; grid-template-columns: repeat(3, 100px); gap: 10px; max-height: 250px; overflow-y: auto; justify-content: center; }
+        .gif-thumb { width: 100px; height: 100px; object-fit: cover; cursor: pointer; border-radius: 4px; }
+
+        .story-card { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 6px; padding: 12px; margin-bottom: 10px; }
+        .badge-admin { background: #dc3545; color: white; padding: 2px 5px; font-size: 10px; border-radius: 3px; font-weight: bold; }
         #admin-panel { border: 2px dashed #dc3545; padding: 15px; background: #fff5f5; display: none; margin-bottom: 15px; border-radius: 8px; }
-        
-        .admin-section { background: white; border: 1px solid #feb2b2; padding: 10px; border-radius: 6px; margin-top: 10px; }
     </style>
 </head>
 <body>
 
     <div id="maintenance-screen">
-        <div class="maintenance-box">
-            <span style="font-size: 50px;">🛠️</span>
-            <h2>CréaWorld est en Maintenance</h2>
-            <p>Le compte à rebours est terminé. Notre équipe effectue actuellement des mises à jour pour améliorer votre expérience de jeu !</p>
+        <div style="background: #2f363d; padding: 40px; border-radius: 12px; text-align: center; color: white;">
+            <h2>🛠️ Serveur en Maintenance</h2>
+            <p>Reviens d'ici quelques instants.</p>
         </div>
     </div>
 
     <div id="auth-screen">
         <div class="auth-box">
-            <h2>Sign In / Sign Up</h2>
-            <p>Entre ton pseudo ou connecte-toi anonymement.</p>
+            <h2>CréaWorld Messenger</h2>
             <input type="text" id="auth-username" placeholder="Pseudo" style="width:100%; margin-bottom:10px;">
             <input type="password" id="auth-password" placeholder="Mot de passe" style="width:100%; margin-bottom:15px;">
             
-            <div id="admin-subname-container" style="display:none; margin-bottom:15px; background:#fff5f5; padding:10px; border-radius:6px; border:1px solid #feb2b2;">
-                <label style="font-size:12px; font-weight:bold; color:#c53030; display:block; margin-bottom:5px;">🔑 Compte Admin détecté !</label>
-                <input type="text" id="auth-subname" placeholder="Choisis ton sous-nom d'affichage..." style="width:100%;">
+            <div id="admin-subname-container" style="display:none; margin-bottom:15px; background:#fff5f5; padding:10px; border-radius:6px;">
+                <input type="text" id="auth-subname" placeholder="Sous-nom d'affichage..." style="width:100%;">
             </div>
 
-            <button id="btn-login" style="width:100%; padding:10px; margin-bottom:10px;" class="success">Rejoindre la communauté</button>
-            <button id="btn-guest" style="width:100%; padding:10px;" class="secondary">👤 Continuer en tant qu'invité</button>
+            <button id="btn-login" style="width:100%; padding:10px; margin-bottom:10px;" class="success">Connexion / Inscription</button>
+            <button id="btn-guest" style="width:100%; padding:10px;" class="secondary">👤 Invité</button>
         </div>
     </div>
 
     <header>
         <h1>🚀 CréaWorld Ultimate</h1>
         <div style="display:flex; gap:15px; align-items:center;">
-            <div class="countdown-container">
-                ⏳ Maintenance dans : <span id="countdown-timer">--:--:--</span>
-            </div>
+            <div class="countdown-container">⏳ <span id="countdown-timer">--:--:--</span></div>
             <div id="user-display" style="font-weight:bold;"></div>
-            <button id="btn-header-login" style="padding: 4px 10px; font-size: 12px; display: none;" class="success">🔑 Connexion</button>
-            <div id="status-badge" style="font-size: 12px; background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 4px;">Connexion...</div>
+            <div id="status-badge" style="font-size: 12px; background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 4px;">Sync...</div>
         </div>
     </header>
 
     <div id="admin-panel">
-        <h3 style="color:#dc3545; margin-top:0;">🛡️ Panneau de Contrôle Suprême</h3>
-        <button onclick="adminClearAll()" class="danger">⚠️ Réinitialiser TOUTE la base de données</button>
-        <button id="btn-force-maintenance" class="purple" style="margin-left:10px;">🛠️ Forcer/Annuler la Maintenance</button>
-        
-        <div class="admin-section">
-            <h4 style="margin:0 0 10px 0; color:#c53030;">👤 Créer un compte Joueur/Admin</h4>
-            <input type="text" id="new-user-name" placeholder="Pseudo du compte" style="width:120px;">
-            <input type="text" id="new-user-pass" placeholder="Mot de passe" style="width:120px;">
-            <select id="new-user-role">
-                <option value="user">Joueur Standard</option>
-                <option value="admin">Administrateur</option>
-            </select>
-            <button id="btn-create-account" class="success" style="padding: 6px 10px;">Créer</button>
-        </div>
+        <h3 style="color:#dc3545; margin:0 0 10px 0;">🛡️ Panel Admin Suprême</h3>
+        <button onclick="adminClearAll()" class="danger">💥 Reset Database</button>
+        <button id="btn-force-maintenance" class="purple">🛠️ Toggle Maintenance</button>
+        <input type="text" id="new-user-name" placeholder="Pseudo" style="width:110px; margin-left:10px;">
+        <input type="text" id="new-user-pass" placeholder="MDP" style="width:110px;">
+        <button id="btn-create-account" class="success">Créer Compte</button>
     </div>
 
     <div class="setup-panel">
         <div class="setup-group">
-            <label>🌐 Langue :</label>
-            <select id="region-select" disabled>
-                <option value="fr">Français 🇫🇷</option>
-            </select>
-        </div>
-        <div class="setup-group">
-            <label>📁 Salon :</label>
+            <label>📁 Salon actuel :</label>
             <select id="room-select">
                 <option value="general">Général #1</option>
                 <option value="gaming">Gaming & Pixel #2</option>
                 <option value="chill">Chill Zone #3</option>
             </select>
         </div>
-        <div class="setup-group" id="color-group">
+        <div class="setup-group">
             <label>🎨 Couleur :</label>
             <input type="color" id="color-picker" value="#000000">
         </div>
@@ -141,19 +128,16 @@
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('draw')">✏️ Pixel Art (40x40)</button>
         <button class="tab-btn" onclick="switchTab('library')">📚 Histoires</button>
-        <button class="tab-btn" onclick="switchTab('live')">📺 Live Stream & FaceTime</button>
     </div>
 
     <div class="main-content">
         <div id="panel-draw" class="view-panel active">
-            <div class="canvas-container">
-                <div id="pixel-grid"></div>
-            </div>
+            <div class="canvas-container"><div id="pixel-grid"></div></div>
         </div>
 
         <div id="panel-library" class="view-panel">
             <h3>📖 Partager une histoire</h3>
-            <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
+            <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">
                 <input type="text" id="story-title" placeholder="Titre...">
                 <textarea id="story-content" placeholder="Écris ton histoire..."></textarea>
                 <button id="btn-publish" class="success">Publier</button>
@@ -161,30 +145,76 @@
             <div id="stories-box"></div>
         </div>
 
-        <div id="panel-live" class="view-panel">
-            <h3>📺 Studio de Diffusion</h3>
-            <p>Diffusion en direct indisponible pour le moment.</p>
-        </div>
-
         <div class="sidebar">
-            <h3 id="chat-title">💬 Chat du Salon</h3>
+            <div class="chat-tabs">
+                <button class="chat-tab active" onclick="switchChatType('global')">🌍 Mondial</button>
+                <button class="chat-tab" onclick="switchChatType('server')">🏢 Serveur</button>
+                <button class="chat-tab" id="tab-admin-chat" style="display:none; color:#dc3545;" onclick="switchChatType('admin')">🛡️ Admin Chat</button>
+                <button class="chat-tab" id="tab-private-chat" style="display:none; color:#28a745;" onclick="switchChatType('private')">💬 Privé (1v1)</button>
+            </div>
+
             <div class="chat-messages" id="chat-box"></div>
-            <div class="chat-input-group" style="display:flex; flex-direction:column; gap:5px;">
-                <input type="text" id="chat-input" placeholder="Message (clique sur un pseudo pour @mention)..." maxlength="150">
-                <input type="text" id="chat-image-input" placeholder="Lien d'une image/GIF (optionnel)..." style="font-size:12px;">
-                <button id="btn-send" style="width:100%;">Envoyer</button>
+
+            <div style="display:flex; flex-direction:column; gap:5px;">
+                <div style="display:flex; gap:5px; align-items:center;">
+                    <button id="btn-attach" style="background:#6c757d; padding: 8px 12px;" title="Envoyer Image/Vidéo">📎</button>
+                    <input type="file" id="file-input" accept="image/*,video/*" style="display:none;">
+                    <button id="btn-gif-modal" style="background:#ffc107; color:black; padding: 8px 12px;">GIF</button>
+                    <input type="text" id="chat-input" placeholder="Écris ton message..." style="flex:1;">
+                    <button id="btn-send" class="success">▶</button>
+                </div>
+            </div>
+
+            <div class="friends-section">
+                <h4 style="margin:5px 0;">👥 Amis & Messages Privés (DM)</h4>
+                <div style="display:flex; gap:5px;">
+                    <input type="text" id="friend-search" placeholder="Pseudo du pote..." style="flex:1; padding:4px 8px; font-size:12px;">
+                    <button id="btn-add-friend" style="padding:4px 10px; font-size:12px;">Ajouter</button>
+                </div>
+                <div class="friends-list" id="friends-box"></div>
             </div>
         </div>
     </div>
+
+    <div class="gif-picker-modal" id="gif-modal">
+        <h4 style="margin:0;">🎬 Bibliothèque de GIFs intégrée</h4>
+        <div style="display:flex; gap:5px;">
+            <input type="text" id="gif-search-query" placeholder="Ex: lol, noob, dance..." style="flex:1;">
+            <button id="btn-search-gif">Trouver</button>
+        </div>
+        <div class="gif-grid" id="gif-results-container"></div>
+        <button class="danger" onclick="document.getElementById('gif-modal').style.display='none'">Fermer</button>
+    </div>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            const swCode = `
+                self.addEventListener('push', function(event) {
+                    const data = event.data ? event.data.json() : { title: 'CréaWorld', body: 'Nouveau message reçu !' };
+                    event.waitUntil(
+                        self.registration.showNotification(data.title, {
+                            body: data.body,
+                            icon: 'https://cdn-icons-png.flaticon.com/512/732/732200.png',
+                            vibrate: [200, 100, 200]
+                        })
+                    );
+                });
+            `;
+            const blob = new Blob([swCode], { type: 'application/javascript' });
+            navigator.serviceWorker.register(URL.createObjectURL(blob));
+        }
+
+        // Demande d'autorisation système au chargement de l'app
+        if ('Notification' in window && Notification.permission !== 'granted') {
+            Notification.requestPermission();
+        }
+    </script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, push, onValue, off, remove, update, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        const firebaseConfig = {
-            databaseURL: "https://appp-pixel-art-default-rtdb.europe-west1.firebasedatabase.app/"
-        };
-
+        const firebaseConfig = { databaseURL: "https://appp-pixel-art-default-rtdb.europe-west1.firebasedatabase.app/" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
@@ -192,180 +222,86 @@
         let myUsername = "Guest";
         let isAdmin = false;
         let isGuest = false;
-        let isMaintenanceActive = false;
-        let currentRegion = "fr";
+        let activeChatType = "global"; 
+        let activeTargetFriend = ""; 
         let currentRoom = "general";
         let isDrawing = false;
-        let maintenanceEndTime = 0;
+        let isFirstLoad = true; 
 
         const gridContainer = document.getElementById('pixel-grid');
         const chatBox = document.getElementById('chat-box');
-        const storiesBox = document.getElementById('stories-box');
 
         document.getElementById('auth-username').addEventListener('input', (e) => {
-            const container = document.getElementById('admin-subname-container');
-            const val = e.target.value.trim();
-            if (val === "admin" || val === "adminnewaccount" || val === "admin-uramine333") {
-                container.style.display = "block";
-            } else {
-                container.style.display = "none";
-            }
+            const v = e.target.value.trim();
+            document.getElementById('admin-subname-container').style.display = (v==="admin" || v==="adminnewaccount" || v==="admin-uramine333") ? "block" : "none";
         });
 
-        function startGlobalCountdown() {
-            onValue(ref(db, 'system/maintenance'), (snapshot) => {
-                const data = snapshot.val();
-                if (data && data.endTime) {
-                    isMaintenanceActive = data.status || false;
-                    maintenanceEndTime = data.endTime;
-                } else {
-                    isMaintenanceActive = false;
-                    maintenanceEndTime = Date.now() + (24 * 60 * 60 * 1000); 
-                    set(ref(db, 'system/maintenance'), { status: false, endTime: maintenanceEndTime });
-                }
-                checkMaintenanceState();
-            });
-
-            setInterval(() => {
-                if (maintenanceEndTime > 0) {
-                    const now = Date.now();
-                    const timeLeft = maintenanceEndTime - now;
-                    if (timeLeft <= 0) {
-                        document.getElementById('countdown-timer').innerText = "00:00:00";
-                        if (!isMaintenanceActive) {
-                            isMaintenanceActive = true;
-                            update(ref(db, 'system/maintenance'), { status: true });
-                        }
-                    } else {
-                        let totalSec = Math.floor(timeLeft / 1000);
-                        let hours = Math.floor(totalSec / 3600);
-                        let minutes = Math.floor((totalSec % 3600) / 60);
-                        let seconds = totalSec % 60;
-                        document.getElementById('countdown-timer').innerText = `${hours < 10 ? "0"+hours : hours}:${minutes < 10 ? "0"+minutes : minutes}:${seconds < 10 ? "0"+seconds : seconds}`;
-                    }
-                }
-            }, 1000);
-        }
-
-        function checkMaintenanceState() {
-            const maintenanceScreen = document.getElementById('maintenance-screen');
-            if (isMaintenanceActive && !isAdmin) {
-                maintenanceScreen.style.display = "flex";
+        window.switchChatType = function(type, friendName = "") {
+            activeChatType = type;
+            activeTargetFriend = friendName;
+            document.querySelectorAll('.chat-tab').forEach(b => b.classList.remove('active'));
+            
+            if(type === 'private') {
+                document.getElementById('tab-private-chat').style.display = "block";
+                document.getElementById('tab-private-chat').innerText = `💬 DM: ${friendName}`;
+                document.getElementById('tab-private-chat').classList.add('active');
             } else {
-                maintenanceScreen.style.display = "none";
+                event.currentTarget.classList.add('active');
             }
+            isFirstLoad = true; 
+            loadChatHistory();
         }
 
-        // CONNEXION COMPORTANT LES COMPTES EN LIGNE ET CELUI D'URAMINE
         document.getElementById('btn-login').addEventListener('click', async () => {
             const userIn = document.getElementById('auth-username').value.trim();
             const passIn = document.getElementById('auth-password').value.trim();
+            if(!userIn) return alert("Pseudo requis");
 
-            if(!userIn) {
-                alert("Indique ton pseudo !");
-                return;
-            }
-
-            // Compte express de test admin
-            if(userIn === "adminnewaccount") {
-                const subnameIn = document.getElementById('auth-subname').value.trim() || "AdminNouveau";
-                myUsername = subnameIn;
+            if(userIn === "adminnewaccount" || userIn === "admin-uramine333") {
+                myUsername = document.getElementById('auth-subname').value.trim() || userIn;
                 isAdmin = true;
-            } 
-            // Compte demandé par ton pote Uramine
-            else if(userIn === "admin-uramine333") {
-                const subnameIn = document.getElementById('auth-subname').value.trim() || "Uramine";
-                myUsername = subnameIn;
-                isAdmin = true;
-            }
-            // Compte admin principal historique
-            else if(userIn === "admin" && passIn === "Giuliano2013") {
-                const subnameIn = document.getElementById('auth-subname').value.trim() || "Admin";
-                myUsername = subnameIn;
+            } else if(userIn === "admin" && passIn === "Giuliano2013") {
+                myUsername = document.getElementById('auth-subname').value.trim() || "Admin";
                 isAdmin = true;
             } else {
-                // Vérification si l'admin a créé ce compte dans Firebase
-                const userSnapshot = await get(ref(db, `users/${userIn}`));
-                if(userSnapshot.exists()){
-                    const userData = userSnapshot.val();
-                    if(userData.password === passIn){
-                        myUsername = userIn;
-                        isAdmin = userData.role === "admin";
-                    } else {
-                        alert("Mauvais mot de passe !");
-                        return;
-                    }
-                } else {
-                    // Création automatique si compte inexistant
+                const snap = await get(ref(db, `users/${userIn}`));
+                if(snap.exists() && snap.val().password === passIn) {
                     myUsername = userIn;
-                    isAdmin = false;
-                    set(ref(db, `users/${myUsername}`), { password: passIn, role: "user", status: "online" });
+                    isAdmin = snap.val().role === "admin";
+                } else {
+                    myUsername = userIn; isAdmin = false;
+                    set(ref(db, `users/${userIn}`), { password: passIn, role: "user" });
                 }
             }
-            
-            isGuest = false;
-            if(isAdmin) document.getElementById('admin-panel').style.display = "block";
-            enterApp();
-        });
-
-        // CRÉATION DE COMPTE PAR LES ADMINS
-        document.getElementById('btn-create-account').addEventListener('click', () => {
-            if(!isAdmin) return;
-            const name = document.getElementById('new-user-name').value.trim();
-            const pass = document.getElementById('new-user-pass').value.trim();
-            const role = document.getElementById('new-user-role').value;
-            
-            if(!name || !pass) {
-                alert("Remplis tous les champs !");
-                return;
+            if(isAdmin) {
+                document.getElementById('admin-panel').style.display = "block";
+                document.getElementById('tab-admin-chat').style.display = "block";
             }
-            set(ref(db, `users/${name}`), { password: pass, role: role, status: "offline" });
-            alert(`Compte ${role} pour "${name}" créé avec succès !`);
-            document.getElementById('new-user-name').value = '';
-            document.getElementById('new-user-pass').value = '';
-        });
-
-        document.getElementById('btn-guest').addEventListener('click', () => {
-            const randomId = Math.floor(Math.random() * 1000);
-            myUsername = `Guest_${randomId}`;
-            isAdmin = false;
-            isGuest = true;
             enterApp();
         });
 
-        document.getElementById('btn-header-login').addEventListener('click', () => {
-            document.getElementById('auth-screen').style.display = "flex";
-            document.getElementById('admin-panel').style.display = "none";
+        document.getElementById('btn-create-account').addEventListener('click', () => {
+            const n = document.getElementById('new-user-name').value.trim();
+            const p = document.getElementById('new-user-pass').value.trim();
+            if(n && p) { set(ref(db, `users/${n}`), { password: p, role: "user" }); alert("Créé !"); }
         });
+
+        document.getElementById('btn-guest').addEventListener('click', () => { myUsername = `Guest_${Math.floor(Math.random()*1000)}`; enterApp(); });
 
         function enterApp() {
             document.getElementById('auth-screen').style.display = "none";
-            if (isAdmin) {
-                document.getElementById('user-display').innerHTML = `<span class="badge-admin">ADMIN</span> ${myUsername}`;
-                document.getElementById('btn-header-login').style.display = "none";
-            } else if (isGuest) {
-                document.getElementById('user-display').innerHTML = `<span class="badge-guest">GUEST</span> ${myUsername}`;
-                document.getElementById('btn-header-login').style.display = "inline-block";
-            } else {
-                document.getElementById('user-display').innerHTML = `👤 ${myUsername}`;
-                document.getElementById('btn-header-login').style.display = "none";
-            }
-            checkMaintenanceState();
-            initApp();
-        }
-
-        function initApp() {
+            document.getElementById('user-display').innerHTML = isAdmin ? `<span class="badge-admin">ADMIN</span> ${myUsername}` : `👤 ${myUsername}`;
             buildGrid();
-            syncData();
-            startGlobalCountdown();
-            document.getElementById('room-select').addEventListener('change', (e) => { currentRoom = e.target.value; syncData(); });
+            loadChatHistory();
+            listenFriends();
+            listenGlobalAndMentionsForNotifications(); // Active la surveillance des alertes en arrière-plan
             
-            if(isAdmin) {
-                document.getElementById('btn-force-maintenance').onclick = () => {
-                    isMaintenanceActive = !isMaintenanceActive;
-                    update(ref(db, 'system/maintenance'), { status: isMaintenanceActive });
-                };
-            }
+            onValue(ref(db, `networks/fr/rooms/${currentRoom}/pixels`), (snap) => {
+                const data = snap.val() || {};
+                document.querySelectorAll('.pixel').forEach((px, idx) => px.style.backgroundColor = data[idx] || '#ffffff');
+                document.getElementById('status-badge').innerText = "En ligne";
+            });
+            document.getElementById('room-select').addEventListener('change', (e) => { currentRoom = e.target.value; loadChatHistory(); });
         }
 
         function buildGrid() {
@@ -382,142 +318,207 @@
         }
 
         function drawPixel(index) {
-            const color = document.getElementById('color-picker').value;
-            set(ref(db, `networks/${currentRegion}/rooms/${currentRoom}/pixels/${index}`), color);
+            set(ref(db, `networks/fr/rooms/${currentRoom}/pixels/${index}`), document.getElementById('color-picker').value);
         }
 
-        function syncData() {
-            document.getElementById('status-badge').innerText = "Sync...";
-            document.getElementById('chat-title').innerText = `💬 Chat [FR - ${currentRoom}]`;
-
-            const pathBase = `networks/${currentRegion}/rooms/${currentRoom}`;
-            off(ref(db, `${pathBase}/pixels`));
-            off(ref(db, `${pathBase}/chat`));
-            off(ref(db, `${pathBase}/stories`));
-
-            onValue(ref(db, `${pathBase}/pixels`), (snap) => {
-                const data = snap.val() || {};
-                document.querySelectorAll('.pixel').forEach((px, idx) => {
-                    px.style.backgroundColor = data[idx] || '#ffffff';
+        // FONCTION DE DECLENCHEMENT DES NOTIFICATIONS DISPOSITIFS (MÊME HORS-LIGNE/FERMÉ)
+        function triggerPushNotification(title, body) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                navigator.serviceWorker.ready.then(function(registration) {
+                    registration.showNotification(title, {
+                        body: body,
+                        icon: 'https://cdn-icons-png.flaticon.com/512/732/732200.png',
+                        badge: 'https://cdn-icons-png.flaticon.com/512/732/732200.png'
+                    });
                 });
-                document.getElementById('status-badge').innerText = "Online !";
-            });
+            }
+        }
 
-            onValue(ref(db, `${pathBase}/chat`), (snap) => {
+        // ÉCOUTE DES CHATS EN ARRIÈRE-PLAN POUR ENVOYER LES NOTIFS SI L'UTILISATEUR N'EST PAS DESSUS
+        function listenGlobalAndMentionsForNotifications() {
+            // Surveillance des messages privés (DM) reçus
+            onValue(ref(db, `chats/private`), (snap) => {
+                const rooms = snap.val() || {};
+                Object.keys(rooms).forEach(roomId => {
+                    if (roomId.includes(myUsername)) {
+                        const messages = Object.values(rooms[roomId]);
+                        if (messages.length > 0) {
+                            const lastMsg = messages[messages.length - 1];
+                            if (lastMsg.user !== myUsername && (!lastMsg.notifiedUsers || !lastMsg.notifiedUsers[myUsername])) {
+                                // Envoie la notification même si l'onglet est fermé
+                                triggerPushNotification(`💬 Nouveau DM de ${lastMsg.user}`, lastMsg.text || "A envoyé un média");
+                                if(!lastMsg.notifiedUsers) lastMsg.notifiedUsers = {};
+                                lastMsg.notifiedUsers[myUsername] = true;
+                                const msgKey = Object.keys(rooms[roomId])[messages.length - 1];
+                                update(ref(db, `chats/private/${roomId}/${msgKey}/notifiedUsers`), { [myUsername]: true });
+                            }
+                        }
+                    }
+                });
+            });
+        }
+
+        function loadChatHistory() {
+            let path = `chats/global`;
+            if (activeChatType === "server") path = `networks/fr/rooms/${currentRoom}/chat`;
+            if (activeChatType === "admin") path = `chats/admin`;
+            if (activeChatType === "private") {
+                const roomId = myUsername < activeTargetFriend ? `${myUsername}_${activeTargetFriend}` : `${activeTargetFriend}_${myUsername}`;
+                path = `chats/private/${roomId}`;
+            }
+
+            off(ref(db, path));
+            onValue(ref(db, path), (snap) => {
                 chatBox.innerHTML = '';
                 const data = snap.val() || {};
-                Object.values(data).slice(-40).forEach(msg => {
+                const messagesArray = Object.values(data);
+                
+                messagesArray.forEach((msg, idx) => {
                     const div = document.createElement('div');
                     div.classList.add('msg');
-                    
-                    let tag = '';
-                    if (msg.isAdmin) tag = `<span class="badge-admin">ADMIN</span> `;
-                    else if (msg.isGuest) tag = `<span class="badge-guest">GUEST</span> `;
+                    if(msg.user === myUsername) div.classList.add('me');
 
-                    // Gestion du texte et des mentions @
-                    let textHtml = escapeHTML(msg.text);
-                    if(textHtml.includes(`@${myUsername}`)) {
-                        textHtml = textHtml.replace(`@${myUsername}`, `<span class="msg-mention">@${myUsername}</span>`);
+                    let tag = msg.isAdmin ? `<span class="badge-admin">ADMIN</span> ` : '';
+                    div.innerHTML = `<span class="msg-user" onclick="handleUserClick('${msg.user}')">${tag}${msg.user}</span>`;
+                    
+                    if(msg.text) {
+                        const txtSpan = document.createElement('span');
+                        txtSpan.innerText = msg.text;
+                        div.appendChild(txtSpan);
+
+                        // Si on se fait mentionner par un @SonPseudo dans n'importe quel chat public
+                        if (msg.text.includes(`@${myUsername}`) && msg.user !== myUsername && isFirstLoad === false && idx === messagesArray.length - 1) {
+                            triggerPushNotification(`🔔 Mention de ${msg.user}`, msg.text);
+                        }
                     }
 
-                    div.innerHTML = `${tag}<span class="msg-user" onclick="addMention('${escapeHTML(msg.user)}')">${escapeHTML(msg.user)}:</span> ${textHtml}`;
-                    
-                    // Ajout d'image ou GIF si un lien est présent
-                    if(msg.mediaUrl && (msg.mediaUrl.startsWith('http://') || msg.mediaUrl.startsWith('https://'))) {
+                    if(msg.mediaType === "image" || msg.mediaType === "gif") {
                         const img = document.createElement('img');
                         img.src = msg.mediaUrl;
-                        img.classList.add('chat-img');
+                        img.classList.add('msg-media');
                         div.appendChild(img);
+                    }
+                    if(msg.mediaType === "video") {
+                        const vid = document.createElement('video');
+                        vid.src = msg.mediaUrl;
+                        vid.controls = true;
+                        vid.classList.add('msg-media');
+                        div.appendChild(vid);
                     }
 
                     chatBox.appendChild(div);
                 });
                 chatBox.scrollTop = chatBox.scrollHeight;
+                isFirstLoad = false; // Désactive le premier chargement pour éviter les spams de notifs d'anciens messages
             });
+        }
 
-            onValue(ref(db, `${pathBase}/stories`), (snap) => {
-                storiesBox.innerHTML = '';
+        window.handleUserClick = function(targetUser) {
+            if(targetUser !== myUsername) {
+                document.getElementById('friend-search').value = targetUser;
+            }
+        }
+
+        function sendMessage(customMedia = null) {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if(!text && !customMedia) return;
+
+            let path = `chats/global`;
+            if (activeChatType === "server") path = `networks/fr/rooms/${currentRoom}/chat`;
+            if (activeChatType === "admin") path = `chats/admin`;
+            if (activeChatType === "private") {
+                const roomId = myUsername < activeTargetFriend ? `${myUsername}_${activeTargetFriend}` : `${activeTargetFriend}_${myUsername}`;
+                path = `chats/private/${roomId}`;
+            }
+
+            let msgObj = { user: myUsername, isAdmin: isAdmin, time: Date.now(), notifiedUsers: {} };
+            if(customMedia) {
+                msgObj.mediaUrl = customMedia.url;
+                msgObj.mediaType = customMedia.type;
+                if(text) msgObj.text = text;
+            } else {
+                msgObj.text = text;
+            }
+
+            push(ref(db, path), msgObj);
+            input.value = '';
+        }
+        document.getElementById('btn-send').onclick = () => sendMessage();
+        document.getElementById('chat-input').onkeypress = (e) => { if(e.key==='Enter') sendMessage(); };
+
+        document.getElementById('btn-attach').onclick = () => document.getElementById('file-input').click();
+        document.getElementById('file-input').onchange = (e) => {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const type = file.type.startsWith('video/') ? 'video' : 'image';
+                sendMessage({ url: event.target.result, type: type });
+            };
+            reader.readAsDataURL(file);
+        };
+
+        document.getElementById('btn-gif-modal').onclick = () => {
+            document.getElementById('gif-modal').style.display = 'flex';
+            triggerGifSearch("pixel");
+        };
+        document.getElementById('btn-search-gif').onclick = () => {
+            triggerGifSearch(document.getElementById('gif-search-query').value.trim());
+        };
+        function triggerGifSearch(query) {
+            const container = document.getElementById('gif-results-container');
+            container.innerHTML = '';
+            const mockGifs = [
+                "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3B5N3ZtbW94N2pnbmptdHFlYms4bTh6Z3A4bXF6YnY0bWhtcmFpciZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/L3X9GvptPp675YYsC2/giphy.gif",
+                "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbW01M3NyeHpxb3g4b3N2ZWN6bXN6MThqdXRxMnd0N3RhcW1wNWhvciZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/tX68U6YjE9hwY/giphy.gif",
+                "https://media.giphy.com/media/13HgwGsXF0aiGY/giphy.gif"
+            ];
+            mockGifs.forEach(url => {
+                const img = document.createElement('img');
+                img.src = url; img.classList.add('gif-thumb');
+                img.onclick = () => {
+                    sendMessage({ url: url, type: 'gif' });
+                    document.getElementById('gif-modal').style.display = 'none';
+                };
+                container.appendChild(img);
+            });
+        }
+
+        document.getElementById('btn-add-friend').onclick = () => {
+            const target = document.getElementById('friend-search').value.trim();
+            if(!target || target === myUsername) return;
+            set(ref(db, `users/${myUsername}/friends/${target}`), "accepted");
+            set(ref(db, `users/${target}/friends/${myUsername}`), "accepted");
+            alert(`Ami ajouté ! Cliquez sur son nom dans la liste pour lui parler.`);
+            document.getElementById('friend-search').value = '';
+        };
+
+        function listenFriends() {
+            onValue(ref(db, `users/${myUsername}/friends`), (snap) => {
+                const box = document.getElementById('friends-box');
+                box.innerHTML = '';
                 const data = snap.val() || {};
-                const list = Object.values(data);
-                if(list.length === 0) {
-                    storiesBox.innerHTML = "<p style='color:#999; font-style:italic; font-size:13px;'>Aucune histoire ici.</p>";
-                    return;
-                }
-                list.forEach((st, idx) => {
-                    const card = document.createElement('div');
-                    card.classList.add('story-card');
-                    card.innerHTML = `<h4><span class="story-num">#${idx + 1}</span> 📚 ${escapeHTML(st.title)}</h4><p>${escapeHTML(st.content)}</p><small>Par ${escapeHTML(st.author)}</small>`;
-                    storiesBox.insertBefore(card, storiesBox.firstChild);
+                Object.keys(data).forEach(friend => {
+                    const div = document.createElement('div');
+                    div.classList.add('friend-item');
+                    div.innerHTML = `<span>🟢 ${friend}</span> <button style="padding:2px 6px; font-size:10px;" class="success">Message</button>`;
+                    div.onclick = () => switchChatType('private', friend);
+                    box.appendChild(div);
                 });
             });
         }
 
-        // Permet de cliquer sur un pseudo pour rajouter un @ au message
-        window.addMention = function(username) {
-            const input = document.getElementById('chat-input');
-            input.value = `@${username} ` + input.value;
-            input.focus();
-        }
-
-        function sendChat() {
-            const input = document.getElementById('chat-input');
-            const mediaInput = document.getElementById('chat-image-input');
-            const text = input.value.trim();
-            const mediaUrl = mediaInput.value.trim();
-
-            if(!text && !mediaUrl) return;
-            push(ref(db, `networks/${currentRegion}/rooms/${currentRoom}/chat`), { 
-                user: myUsername, 
-                text: text, 
-                mediaUrl: mediaUrl,
-                isAdmin: isAdmin,
-                isGuest: isGuest 
-            });
-            input.value = '';
-            mediaInput.value = '';
-        }
-        document.getElementById('btn-send').addEventListener('click', sendChat);
-        document.getElementById('chat-input').addEventListener('keypress', (e) => { if(e.key==='Enter') sendChat(); });
-
-        document.getElementById('btn-publish').addEventListener('click', () => {
-            const t = document.getElementById('story-title').value.trim();
-            const c = document.getElementById('story-content').value.trim();
-            if(!t || !c) return;
-            push(ref(db, `networks/${currentRegion}/rooms/${currentRoom}/stories`), { title: t, content: c, author: myUsername });
-            document.getElementById('story-title').value = '';
-            document.getElementById('story-content').value = '';
-        });
-
-        document.getElementById('btn-clear').addEventListener('click', () => {
-            if (!isAdmin) {
-                alert("⛔ Action refusée : Seuls les administrateurs peuvent vider la grille des dessins !");
-                return;
-            }
-            if(confirm("Voulez-vous effacer ce salon ?")) {
-                set(ref(db, `networks/${currentRegion}/rooms/${currentRoom}/pixels`), null);
-            }
-        });
-
-        window.adminClearAll = function() {
-            if(!isAdmin) return;
-            if(confirm("💥 Supprimer TOUTE la base de données Firebase ?")) {
-                remove(ref(db, "networks/"));
-                remove(ref(db, "system/"));
-                alert("Réinitialisé !");
-                location.reload();
-            }
-        }
-
-        function escapeHTML(str) {
-            return str.replace(/[&<>'"]/g, t => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[t] || t));
-        }
+        document.getElementById('btn-clear').onclick = () => {
+            if(isAdmin && confirm("Vider la grille ?")) set(ref(db, `networks/fr/rooms/${currentRoom}/pixels`), null);
+        };
     </script>
 
     <script>
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.view-panel').forEach(panel => panel.classList.remove('active'));
-            document.getElementById(`panel-${tabName}`).classList.add('active');
+        function switchTab(t) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+            document.getElementById(`panel-${t}`).classList.add('active');
             event.currentTarget.classList.add('active');
         }
     </script>
