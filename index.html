@@ -14,8 +14,6 @@
         
         #maintenance-screen { position: fixed; top:0; left:0; width:100vw; height:100vh; background:#24292e; color: white; display:none; flex-direction:column; align-items:center; justify-content:center; z-index:99998; text-align: center; padding: 20px; }
         .maintenance-box { background: #2f363d; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); max-width: 500px; }
-        .discord-btn { background: #5865F2; color: white; padding: 12px 24px; border-radius: 6px; font-weight: bold; text-decoration: none; display: inline-block; margin-top: 20px; transition: 0.2s; font-size: 16px; }
-        .discord-btn:hover { background: #4752C4; }
 
         header { background: #24292e; color: white; padding: 10px 20px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
         header h1 { margin: 0; font-size: 20px; }
@@ -59,8 +57,7 @@
             <span style="font-size: 50px;">🛠️</span>
             <h2>CréaWorld est en Maintenance</h2>
             <p>Le compte à rebours est terminé. Notre équipe effectue actuellement des mises à jour pour améliorer votre expérience de jeu !</p>
-            <p style="color: #bbb; font-size: 14px;">Rejoignez notre Discord pour savoir pourquoi nous sommes en maintenance et connaître l'heure de réouverture :</p>
-            <a href="https://discord.gg/ton-lien-ici" target="_blank" class="discord-btn">💬 Rejoindre notre Discord</a>
+            <p style="color: #bbb; font-size: 14px;">Veuillez patienter pendant la réouverture du serveur.</p>
         </div>
     </div>
 
@@ -161,7 +158,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, push, onValue, off, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, set, push, onValue, off, remove, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             databaseURL: "https://appp-pixel-art-default-rtdb.europe-west1.firebasedatabase.app/"
@@ -192,7 +189,7 @@
             }
         });
 
-        // REBOURS HORLOGE FIABLE DE 2 MINUTES
+        // REBOURS HORLOGE REELLE (CALIBRÉ SUR 24 HEURES)
         function startGlobalCountdown() {
             onValue(ref(db, 'system/maintenance'), (snapshot) => {
                 const data = snapshot.val();
@@ -201,8 +198,8 @@
                     maintenanceEndTime = data.endTime;
                 } else {
                     isMaintenanceActive = false;
-                    // Fixe la fin à EXACTEMENT 2 minutes d'ici
-                    maintenanceEndTime = Date.now() + (2 * 60 * 1000); 
+                    // Initialise à EXACTEMENT 24 heures à partir de maintenant selon l'appareil
+                    maintenanceEndTime = Date.now() + (24 * 60 * 60 * 1000); 
                     set(ref(db, 'system/maintenance'), { status: false, endTime: maintenanceEndTime });
                 }
                 checkMaintenanceState();
@@ -217,8 +214,8 @@
                         document.getElementById('countdown-timer').innerText = "00:00:00";
                         if (!isMaintenanceActive) {
                             isMaintenanceActive = true;
-                            // CORRECTION : On met à jour l'objet proprement sans détruire endTime
-                            set(ref(db, 'system/maintenance'), { status: true, endTime: maintenanceEndTime });
+                            // Active proprement pour tout le monde sans écraser le reste
+                            update(ref(db, 'system/maintenance'), { status: true });
                         }
                     } else {
                         let totalSec = Math.floor(timeLeft / 1000);
@@ -287,7 +284,8 @@
             if(isAdmin) {
                 document.getElementById('btn-force-maintenance').addEventListener('click', () => {
                     isMaintenanceActive = !isMaintenanceActive;
-                    set(ref(db, 'system/maintenance'), { status: isMaintenanceActive, endTime: maintenanceEndTime });
+                    // Force la mise à jour instantanée globale sur Firebase
+                    update(ref(db, 'system/maintenance'), { status: isMaintenanceActive });
                 });
             }
         }
@@ -402,7 +400,6 @@
             document.querySelectorAll('.view-panel').forEach(panel => panel.classList.remove('active'));
             document.getElementById(`panel-${tabName}`).classList.add('active');
             event.currentTarget.classList.add('active');
-            document.getElementById('color-group').style.display = (tabName === 'draw') ? 'flex' : 'none';
         }
     </script>
 </body>
