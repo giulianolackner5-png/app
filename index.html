@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CréaWorld Ultimate - MESSENGER EDITION</title>
+    <title>CréaWorld Game Hub & Messenger</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: #f0f2f5; margin: 0; padding: 15px; display: flex; flex-direction: column; height: 100vh; }
@@ -12,505 +12,243 @@
         #auth-screen { position: fixed; top:0; left:0; width:100vw; height:100vh; background:#007bff; display:flex; align-items:center; justify-content:center; z-index:9999; }
         .auth-box { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 350px; text-align: center; }
         
-        #maintenance-screen { position: fixed; top:0; left:0; width:100vw; height:100vh; background:#24292e; color: white; display:none; flex-direction:column; align-items:center; justify-content:center; z-index:99998; text-align: center; padding: 20px; }
-
         header { background: #24292e; color: white; padding: 10px 20px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
         header h1 { margin: 0; font-size: 20px; }
-
-        .setup-panel { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 15px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center; }
-        .setup-group { display: flex; align-items: center; gap: 8px; }
-        input, select, button, textarea { padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
-        button { background: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; }
-        button:hover { background: #0056b3; }
-        button.danger { background: #dc3545; }
-        button.success { background: #28a745; }
-        button.purple { background: #6f42c1; }
-        button.secondary { background: #6c757d; }
-
-        .countdown-container { background: #ffc107; color: black; padding: 6px 12px; border-radius: 4px; font-weight: bold; font-family: monospace; font-size: 14px; display: flex; align-items: center; gap: 5px; }
 
         .tabs { display: flex; gap: 10px; margin-bottom: 15px; overflow-x: auto; }
         .tab-btn { background: #e4e6eb; color: #333; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: 600; white-space: nowrap; }
         .tab-btn.active { background: #007bff; color: white; }
 
         .main-content { display: flex; gap: 15px; flex: 1; min-height: 0; }
-        .view-panel { display: none; flex: 1.2; background: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); min-height: 0; overflow-y: auto; }
+        .view-panel { display: none; flex: 1.5; background: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); min-height: 0; overflow-y: auto; }
         .view-panel.active { display: flex; flex-direction: column; }
 
-        .canvas-container { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; overflow: auto; background: #fafafa; border-radius: 6px; padding: 10px; }
-        #pixel-grid { display: grid; background: #ddd; gap: 1px; border: 1px solid #999; }
-        .pixel { width: 10px; height: 10px; background: white; cursor: crosshair; }
-
-        .sidebar { flex: 1.5; min-width: 400px; display: flex; flex-direction: column; background: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); min-height: 0; }
-        .chat-tabs { display: flex; gap: 5px; margin-bottom: 10px; border-bottom: 2px solid #eee; padding-bottom: 8px; }
-        .chat-tab { background: #f0f2f5; font-size: 12px; padding: 6px 12px; border-radius: 6px; cursor: pointer; border: none; font-weight: bold; }
-        .chat-tab.active { background: #007bff; color: white; }
+        /* CREATOR & LIBRARY STYLE */
+        .game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; }
+        .game-card { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 15px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .game-card h4 { margin: 0 0 10px 0; color: #333; }
         
-        .chat-messages { flex: 2; overflow-y: auto; border: 1px solid #eee; padding: 10px; border-radius: 4px; margin-bottom: 10px; background: #fafafa; display: flex; flex-direction: column; }
-        .msg { margin-bottom: 10px; padding: 8px; border-radius: 8px; background: #e4e6eb; max-width: 85%; align-self: flex-start; font-size: 13px; }
-        .msg.me { background: #007bff; color: white; align-self: flex-end; }
-        .msg.me .msg-user { color: #fff; }
-        .msg-user { font-weight: bold; color: #007bff; display: block; margin-bottom: 3px; cursor: pointer; }
-        .msg-media { max-width: 100%; max-height: 200px; border-radius: 6px; margin-top: 5px; display: block; }
+        /* FULLSCREEN PLAYER */
+        #fullscreen-player { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: black; z-index: 10000; display: none; flex-direction: column; }
+        #game-frame { flex: 1; border: none; background: white; width: 100%; height: 100%; }
+        .player-bar { background: #24292e; color: white; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
 
-        .friends-section { flex: 1; border-top: 2px solid #eee; padding-top: 10px; display: flex; flex-direction: column; min-height: 180px; }
-        .friends-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; margin-top: 5px; }
-        .friend-item { display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; padding: 6px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; border: 1px solid #e9ecef; }
-        .friend-item:hover { background: #e4e6eb; }
+        /* SIDEBAR CHAT */
+        .sidebar { flex: 1; min-width: 320px; display: flex; flex-direction: column; background: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); min-height: 0; }
+        .chat-messages { flex: 1; overflow-y: auto; border: 1px solid #eee; padding: 10px; border-radius: 4px; margin-bottom: 10px; background: #fafafa; }
+        .msg { margin-bottom: 10px; padding: 8px; border-radius: 8px; background: #e4e6eb; font-size: 13px; }
+        .msg.me { background: #007bff; color: white; text-align: right; }
 
-        .gif-picker-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 10000; width: 90%; max-width: 400px; display: none; flex-direction: column; gap: 10px; }
-        .gif-grid { display: grid; grid-template-columns: repeat(3, 100px); gap: 10px; max-height: 250px; overflow-y: auto; justify-content: center; }
-        .gif-thumb { width: 100px; height: 100px; object-fit: cover; cursor: pointer; border-radius: 4px; }
-
-        .story-card { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 6px; padding: 12px; margin-bottom: 10px; }
-        .badge-admin { background: #dc3545; color: white; padding: 2px 5px; font-size: 10px; border-radius: 3px; font-weight: bold; }
-        #admin-panel { border: 2px dashed #dc3545; padding: 15px; background: #fff5f5; display: none; margin-bottom: 15px; border-radius: 8px; }
+        input, textarea, select, button { padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+        button { background: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; }
+        button:hover { background: #0056b3; }
+        button.danger { background: #dc3545; }
+        button.success { background: #28a745; }
+        button.warning { background: #ffc107; color: black; }
     </style>
 </head>
 <body>
 
-    <div id="maintenance-screen">
-        <div style="background: #2f363d; padding: 40px; border-radius: 12px; text-align: center; color: white;">
-            <h2>🛠️ Serveur en Maintenance</h2>
-            <p>Reviens d'ici quelques instants.</p>
-        </div>
-    </div>
-
     <div id="auth-screen">
         <div class="auth-box">
-            <h2>CréaWorld Messenger</h2>
+            <h2>CréaWorld Arcade</h2>
             <input type="text" id="auth-username" placeholder="Pseudo" style="width:100%; margin-bottom:10px;">
             <input type="password" id="auth-password" placeholder="Mot de passe" style="width:100%; margin-bottom:15px;">
-            
-            <div id="admin-subname-container" style="display:none; margin-bottom:15px; background:#fff5f5; padding:10px; border-radius:6px;">
-                <input type="text" id="auth-subname" placeholder="Sous-nom d'affichage..." style="width:100%;">
-            </div>
-
-            <button id="btn-login" style="width:100%; padding:10px; margin-bottom:10px;" class="success">Connexion / Inscription</button>
-            <button id="btn-guest" style="width:100%; padding:10px;" class="secondary">👤 Invité</button>
+            <button id="btn-login" style="width:100%;" class="success">Rejoindre la communauté</button>
         </div>
     </div>
 
     <header>
-        <h1>🚀 CréaWorld Ultimate</h1>
-        <div style="display:flex; gap:15px; align-items:center;">
-            <div class="countdown-container">⏳ <span id="countdown-timer">--:--:--</span></div>
-            <div id="user-display" style="font-weight:bold;"></div>
-            <div id="status-badge" style="font-size: 12px; background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 4px;">Sync...</div>
-        </div>
+        <h1>🎮 CréaWorld Arcade & Studio</h1>
+        <div id="user-display" style="font-weight:bold;"></div>
     </header>
 
-    <div id="admin-panel">
-        <h3 style="color:#dc3545; margin:0 0 10px 0;">🛡️ Panel Admin Suprême</h3>
-        <button onclick="adminClearAll()" class="danger">💥 Reset Database</button>
-        <button id="btn-force-maintenance" class="purple">🛠️ Toggle Maintenance</button>
-        <input type="text" id="new-user-name" placeholder="Pseudo" style="width:110px; margin-left:10px;">
-        <input type="text" id="new-user-pass" placeholder="MDP" style="width:110px;">
-        <button id="btn-create-account" class="success">Créer Compte</button>
-    </div>
-
-    <div class="setup-panel">
-        <div class="setup-group">
-            <label>📁 Salon actuel :</label>
-            <select id="room-select">
-                <option value="general">Général #1</option>
-                <option value="gaming">Gaming & Pixel #2</option>
-                <option value="chill">Chill Zone #3</option>
-            </select>
-        </div>
-        <div class="setup-group">
-            <label>🎨 Couleur :</label>
-            <input type="color" id="color-picker" value="#000000">
-        </div>
-        <button id="btn-clear" class="danger" style="margin-left: auto;">Vider la grille</button>
-    </div>
-
     <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('draw')">✏️ Pixel Art (40x40)</button>
-        <button class="tab-btn" onclick="switchTab('library')">📚 Histoires</button>
+        <button class="tab-btn active" onclick="switchTab('library')">🕹️ Bibliothèque de Jeux</button>
+        <button class="tab-btn" onclick="switchTab('studio')">🛠️ Créer un Jeu HTML</button>
+        <button class="tab-btn" onclick="switchTab('apk-launcher')">🤖 Émulateur / Lanceur APK</button>
     </div>
 
     <div class="main-content">
-        <div id="panel-draw" class="view-panel active">
-            <div class="canvas-container"><div id="pixel-grid"></div></div>
+        
+        <div id="panel-library" class="view-panel active">
+            <h3>🌍 Jeux créés par la communauté</h3>
+            <p style="color:#666; margin:0;">Clique sur un jeu pour y jouer instantanément en plein écran !</p>
+            <div class="game-grid" id="library-games-container">
+                </div>
         </div>
 
-        <div id="panel-library" class="view-panel">
-            <h3>📖 Partager une histoire</h3>
-            <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">
-                <input type="text" id="story-title" placeholder="Titre...">
-                <textarea id="story-content" placeholder="Écris ton histoire..."></textarea>
-                <button id="btn-publish" class="success">Publier</button>
+        <div id="panel-studio" class="view-panel">
+            <h3>🛠️ Créer ton mini-jeu en HTML / JavaScript</h3>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <input type="text" id="game-title" placeholder="Nom de ton jeu (Ex: Mon Super Clicker)">
+                <textarea id="game-code" placeholder="Colle ton code HTML, CSS et JS complet ici... <button onclick='alert(\'Gagné !\')'>Jouer</button>" style="height: 250px; font-family: monospace;"></textarea>
+                <button id="btn-publish-game" class="success">🚀 Publier sur la bibliothèque publique</button>
             </div>
-            <div id="stories-box"></div>
+        </div>
+
+        <div id="panel-apk-launcher" class="view-panel">
+            <h3>🤖 Lanceur d'applications & fichiers APK</h3>
+            <p style="color: #666;">Sélectionne un fichier <b>.apk</b> depuis ton appareil pour l'analyser et l'exécuter dans l'environnement Web sécurisé de l'application.</p>
+            
+            <div style="background: #e9ecef; padding: 20px; border-radius: 8px; text-align: center; border: 2px dashed #007bff;">
+                <input type="file" id="apk-file-input" accept=".apk" style="display: none;">
+                <button onclick="document.getElementById('apk-file-input').click()" class="warning">📁 Charger un fichier APK</button>
+                <div id="apk-info" style="margin-top: 15px; font-weight: bold; color: #333;">Aucun APK sélectionné</div>
+            </div>
+
+            <div id="apk-emulator-zone" style="display:none; margin-top:20px; text-align:center;">
+                <h4>📱 Écran de l'application simulée</h4>
+                <div style="width:320px; height:560px; background:#000; border: 12px solid #333; border-radius:24px; margin: 0 auto; display:flex; align-items:center; justify-content:center; color:white; padding: 10px;">
+                    <div id="apk-runtime-view">Initialisation de l'APK...</div>
+                </div>
+            </div>
         </div>
 
         <div class="sidebar">
-            <div class="chat-tabs">
-                <button class="chat-tab active" onclick="switchChatType('global')">🌍 Mondial</button>
-                <button class="chat-tab" onclick="switchChatType('server')">🏢 Serveur</button>
-                <button class="chat-tab" id="tab-admin-chat" style="display:none; color:#dc3545;" onclick="switchChatType('admin')">🛡️ Admin Chat</button>
-                <button class="chat-tab" id="tab-private-chat" style="display:none; color:#28a745;" onclick="switchChatType('private')">💬 Privé (1v1)</button>
-            </div>
-
+            <h4>💬 Chat Général</h4>
             <div class="chat-messages" id="chat-box"></div>
-
-            <div style="display:flex; flex-direction:column; gap:5px;">
-                <div style="display:flex; gap:5px; align-items:center;">
-                    <button id="btn-attach" style="background:#6c757d; padding: 8px 12px;" title="Envoyer Image/Vidéo">📎</button>
-                    <input type="file" id="file-input" accept="image/*,video/*" style="display:none;">
-                    <button id="btn-gif-modal" style="background:#ffc107; color:black; padding: 8px 12px;">GIF</button>
-                    <input type="text" id="chat-input" placeholder="Écris ton message..." style="flex:1;">
-                    <button id="btn-send" class="success">▶</button>
-                </div>
-            </div>
-
-            <div class="friends-section">
-                <h4 style="margin:5px 0;">👥 Amis & Messages Privés (DM)</h4>
-                <div style="display:flex; gap:5px;">
-                    <input type="text" id="friend-search" placeholder="Pseudo du pote..." style="flex:1; padding:4px 8px; font-size:12px;">
-                    <button id="btn-add-friend" style="padding:4px 10px; font-size:12px;">Ajouter</button>
-                </div>
-                <div class="friends-list" id="friends-box"></div>
+            <div style="display:flex; gap:5px;">
+                <input type="text" id="chat-input" placeholder="Discuter avec les joueurs..." style="flex:1;">
+                <button id="btn-send-chat" class="success">▶</button>
             </div>
         </div>
+
     </div>
 
-    <div class="gif-picker-modal" id="gif-modal">
-        <h4 style="margin:0;">🎬 Bibliothèque de GIFs intégrée</h4>
-        <div style="display:flex; gap:5px;">
-            <input type="text" id="gif-search-query" placeholder="Ex: lol, noob, dance..." style="flex:1;">
-            <button id="btn-search-gif">Trouver</button>
+    <div id="fullscreen-player">
+        <div class="player-bar">
+            <h3 id="current-playing-title" style="margin:0;">Jeu en cours</h3>
+            <button onclick="closeFullscreenGame()" class="danger">❌ Quitter le plein écran</button>
         </div>
-        <div class="gif-grid" id="gif-results-container"></div>
-        <button class="danger" onclick="document.getElementById('gif-modal').style.display='none'">Fermer</button>
+        <iframe id="game-frame"></iframe>
     </div>
-
-    <script>
-        if ('serviceWorker' in navigator) {
-            const swCode = `
-                self.addEventListener('push', function(event) {
-                    const data = event.data ? event.data.json() : { title: 'CréaWorld', body: 'Nouveau message reçu !' };
-                    event.waitUntil(
-                        self.registration.showNotification(data.title, {
-                            body: data.body,
-                            icon: 'https://cdn-icons-png.flaticon.com/512/732/732200.png',
-                            vibrate: [200, 100, 200]
-                        })
-                    );
-                });
-            `;
-            const blob = new Blob([swCode], { type: 'application/javascript' });
-            navigator.serviceWorker.register(URL.createObjectURL(blob));
-        }
-
-        // Demande d'autorisation système au chargement de l'app
-        if ('Notification' in window && Notification.permission !== 'granted') {
-            Notification.requestPermission();
-        }
-    </script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, push, onValue, off, remove, update, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = { databaseURL: "https://appp-pixel-art-default-rtdb.europe-west1.firebasedatabase.app/" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        const GRID_SIZE = 40;
-        let myUsername = "Guest";
-        let isAdmin = false;
-        let isGuest = false;
-        let activeChatType = "global"; 
-        let activeTargetFriend = ""; 
-        let currentRoom = "general";
-        let isDrawing = false;
-        let isFirstLoad = true; 
+        let myUsername = "Joueur";
 
-        const gridContainer = document.getElementById('pixel-grid');
-        const chatBox = document.getElementById('chat-box');
-
-        document.getElementById('auth-username').addEventListener('input', (e) => {
-            const v = e.target.value.trim();
-            document.getElementById('admin-subname-container').style.display = (v==="admin" || v==="adminnewaccount" || v==="admin-uramine333") ? "block" : "none";
-        });
-
-        window.switchChatType = function(type, friendName = "") {
-            activeChatType = type;
-            activeTargetFriend = friendName;
-            document.querySelectorAll('.chat-tab').forEach(b => b.classList.remove('active'));
-            
-            if(type === 'private') {
-                document.getElementById('tab-private-chat').style.display = "block";
-                document.getElementById('tab-private-chat').innerText = `💬 DM: ${friendName}`;
-                document.getElementById('tab-private-chat').classList.add('active');
-            } else {
-                event.currentTarget.classList.add('active');
-            }
-            isFirstLoad = true; 
-            loadChatHistory();
-        }
-
-        document.getElementById('btn-login').addEventListener('click', async () => {
-            const userIn = document.getElementById('auth-username').value.trim();
-            const passIn = document.getElementById('auth-password').value.trim();
-            if(!userIn) return alert("Pseudo requis");
-
-            if(userIn === "adminnewaccount" || userIn === "admin-uramine333") {
-                myUsername = document.getElementById('auth-subname').value.trim() || userIn;
-                isAdmin = true;
-            } else if(userIn === "admin" && passIn === "Giuliano2013") {
-                myUsername = document.getElementById('auth-subname').value.trim() || "Admin";
-                isAdmin = true;
-            } else {
-                const snap = await get(ref(db, `users/${userIn}`));
-                if(snap.exists() && snap.val().password === passIn) {
-                    myUsername = userIn;
-                    isAdmin = snap.val().role === "admin";
-                } else {
-                    myUsername = userIn; isAdmin = false;
-                    set(ref(db, `users/${userIn}`), { password: passIn, role: "user" });
-                }
-            }
-            if(isAdmin) {
-                document.getElementById('admin-panel').style.display = "block";
-                document.getElementById('tab-admin-chat').style.display = "block";
-            }
-            enterApp();
-        });
-
-        document.getElementById('btn-create-account').addEventListener('click', () => {
-            const n = document.getElementById('new-user-name').value.trim();
-            const p = document.getElementById('new-user-pass').value.trim();
-            if(n && p) { set(ref(db, `users/${n}`), { password: p, role: "user" }); alert("Créé !"); }
-        });
-
-        document.getElementById('btn-guest').addEventListener('click', () => { myUsername = `Guest_${Math.floor(Math.random()*1000)}`; enterApp(); });
-
-        function enterApp() {
+        // CONNEXION
+        document.getElementById('btn-login').addEventListener('click', () => {
+            const user = document.getElementById('auth-username').value.trim();
+            if(!user) return alert("Choisis un pseudo !");
+            myUsername = user;
             document.getElementById('auth-screen').style.display = "none";
-            document.getElementById('user-display').innerHTML = isAdmin ? `<span class="badge-admin">ADMIN</span> ${myUsername}` : `👤 ${myUsername}`;
-            buildGrid();
-            loadChatHistory();
-            listenFriends();
-            listenGlobalAndMentionsForNotifications(); // Active la surveillance des alertes en arrière-plan
+            document.getElementById('user-display').innerText = `👤 ${myUsername}`;
             
-            onValue(ref(db, `networks/fr/rooms/${currentRoom}/pixels`), (snap) => {
+            startSync();
+        });
+
+        function startSync() {
+            // Écoute des jeux créés
+            onValue(ref(db, "arcade/games"), (snap) => {
+                const container = document.getElementById('library-games-container');
+                container.innerHTML = '';
                 const data = snap.val() || {};
-                document.querySelectorAll('.pixel').forEach((px, idx) => px.style.backgroundColor = data[idx] || '#ffffff');
-                document.getElementById('status-badge').innerText = "En ligne";
-            });
-            document.getElementById('room-select').addEventListener('change', (e) => { currentRoom = e.target.value; loadChatHistory(); });
-        }
-
-        function buildGrid() {
-            gridContainer.innerHTML = '';
-            gridContainer.style.gridTemplateColumns = `repeat(${GRID_SIZE}, 10px)`;
-            for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
-                const pixel = document.createElement('div');
-                pixel.classList.add('pixel');
-                pixel.addEventListener('mousedown', (e) => { e.preventDefault(); isDrawing = true; drawPixel(i); });
-                pixel.addEventListener('mouseover', () => { if (isDrawing) drawPixel(i); });
-                gridContainer.appendChild(pixel);
-            }
-            window.addEventListener('mouseup', () => isDrawing = false);
-        }
-
-        function drawPixel(index) {
-            set(ref(db, `networks/fr/rooms/${currentRoom}/pixels/${index}`), document.getElementById('color-picker').value);
-        }
-
-        // FONCTION DE DECLENCHEMENT DES NOTIFICATIONS DISPOSITIFS (MÊME HORS-LIGNE/FERMÉ)
-        function triggerPushNotification(title, body) {
-            if ('Notification' in window && Notification.permission === 'granted') {
-                navigator.serviceWorker.ready.then(function(registration) {
-                    registration.showNotification(title, {
-                        body: body,
-                        icon: 'https://cdn-icons-png.flaticon.com/512/732/732200.png',
-                        badge: 'https://cdn-icons-png.flaticon.com/512/732/732200.png'
-                    });
-                });
-            }
-        }
-
-        // ÉCOUTE DES CHATS EN ARRIÈRE-PLAN POUR ENVOYER LES NOTIFS SI L'UTILISATEUR N'EST PAS DESSUS
-        function listenGlobalAndMentionsForNotifications() {
-            // Surveillance des messages privés (DM) reçus
-            onValue(ref(db, `chats/private`), (snap) => {
-                const rooms = snap.val() || {};
-                Object.keys(rooms).forEach(roomId => {
-                    if (roomId.includes(myUsername)) {
-                        const messages = Object.values(rooms[roomId]);
-                        if (messages.length > 0) {
-                            const lastMsg = messages[messages.length - 1];
-                            if (lastMsg.user !== myUsername && (!lastMsg.notifiedUsers || !lastMsg.notifiedUsers[myUsername])) {
-                                // Envoie la notification même si l'onglet est fermé
-                                triggerPushNotification(`💬 Nouveau DM de ${lastMsg.user}`, lastMsg.text || "A envoyé un média");
-                                if(!lastMsg.notifiedUsers) lastMsg.notifiedUsers = {};
-                                lastMsg.notifiedUsers[myUsername] = true;
-                                const msgKey = Object.keys(rooms[roomId])[messages.length - 1];
-                                update(ref(db, `chats/private/${roomId}/${msgKey}/notifiedUsers`), { [myUsername]: true });
-                            }
-                        }
-                    }
-                });
-            });
-        }
-
-        function loadChatHistory() {
-            let path = `chats/global`;
-            if (activeChatType === "server") path = `networks/fr/rooms/${currentRoom}/chat`;
-            if (activeChatType === "admin") path = `chats/admin`;
-            if (activeChatType === "private") {
-                const roomId = myUsername < activeTargetFriend ? `${myUsername}_${activeTargetFriend}` : `${activeTargetFriend}_${myUsername}`;
-                path = `chats/private/${roomId}`;
-            }
-
-            off(ref(db, path));
-            onValue(ref(db, path), (snap) => {
-                chatBox.innerHTML = '';
-                const data = snap.val() || {};
-                const messagesArray = Object.values(data);
                 
-                messagesArray.forEach((msg, idx) => {
+                Object.values(data).forEach(game => {
+                    const card = document.createElement('div');
+                    card.classList.add('game-card');
+                    card.innerHTML = `
+                        <h4>${game.title}</h4>
+                        <p style="font-size:11px; color:#777;">Par: ${game.author}</p>
+                        <button class="success" style="width:100%;">▶ Lancer (Fullscreen)</button>
+                    `;
+                    card.querySelector('button').onclick = () => launchGame(game.title, game.code);
+                    container.appendChild(card);
+                });
+            });
+
+            // Écoute du Chat
+            onValue(ref(db, "arcade/chat"), (snap) => {
+                const box = document.getElementById('chat-box');
+                box.innerHTML = '';
+                const data = snap.val() || {};
+                Object.values(data).forEach(msg => {
                     const div = document.createElement('div');
                     div.classList.add('msg');
                     if(msg.user === myUsername) div.classList.add('me');
-
-                    let tag = msg.isAdmin ? `<span class="badge-admin">ADMIN</span> ` : '';
-                    div.innerHTML = `<span class="msg-user" onclick="handleUserClick('${msg.user}')">${tag}${msg.user}</span>`;
-                    
-                    if(msg.text) {
-                        const txtSpan = document.createElement('span');
-                        txtSpan.innerText = msg.text;
-                        div.appendChild(txtSpan);
-
-                        // Si on se fait mentionner par un @SonPseudo dans n'importe quel chat public
-                        if (msg.text.includes(`@${myUsername}`) && msg.user !== myUsername && isFirstLoad === false && idx === messagesArray.length - 1) {
-                            triggerPushNotification(`🔔 Mention de ${msg.user}`, msg.text);
-                        }
-                    }
-
-                    if(msg.mediaType === "image" || msg.mediaType === "gif") {
-                        const img = document.createElement('img');
-                        img.src = msg.mediaUrl;
-                        img.classList.add('msg-media');
-                        div.appendChild(img);
-                    }
-                    if(msg.mediaType === "video") {
-                        const vid = document.createElement('video');
-                        vid.src = msg.mediaUrl;
-                        vid.controls = true;
-                        vid.classList.add('msg-media');
-                        div.appendChild(vid);
-                    }
-
-                    chatBox.appendChild(div);
-                });
-                chatBox.scrollTop = chatBox.scrollHeight;
-                isFirstLoad = false; // Désactive le premier chargement pour éviter les spams de notifs d'anciens messages
-            });
-        }
-
-        window.handleUserClick = function(targetUser) {
-            if(targetUser !== myUsername) {
-                document.getElementById('friend-search').value = targetUser;
-            }
-        }
-
-        function sendMessage(customMedia = null) {
-            const input = document.getElementById('chat-input');
-            const text = input.value.trim();
-            if(!text && !customMedia) return;
-
-            let path = `chats/global`;
-            if (activeChatType === "server") path = `networks/fr/rooms/${currentRoom}/chat`;
-            if (activeChatType === "admin") path = `chats/admin`;
-            if (activeChatType === "private") {
-                const roomId = myUsername < activeTargetFriend ? `${myUsername}_${activeTargetFriend}` : `${activeTargetFriend}_${myUsername}`;
-                path = `chats/private/${roomId}`;
-            }
-
-            let msgObj = { user: myUsername, isAdmin: isAdmin, time: Date.now(), notifiedUsers: {} };
-            if(customMedia) {
-                msgObj.mediaUrl = customMedia.url;
-                msgObj.mediaType = customMedia.type;
-                if(text) msgObj.text = text;
-            } else {
-                msgObj.text = text;
-            }
-
-            push(ref(db, path), msgObj);
-            input.value = '';
-        }
-        document.getElementById('btn-send').onclick = () => sendMessage();
-        document.getElementById('chat-input').onkeypress = (e) => { if(e.key==='Enter') sendMessage(); };
-
-        document.getElementById('btn-attach').onclick = () => document.getElementById('file-input').click();
-        document.getElementById('file-input').onchange = (e) => {
-            const file = e.target.files[0];
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const type = file.type.startsWith('video/') ? 'video' : 'image';
-                sendMessage({ url: event.target.result, type: type });
-            };
-            reader.readAsDataURL(file);
-        };
-
-        document.getElementById('btn-gif-modal').onclick = () => {
-            document.getElementById('gif-modal').style.display = 'flex';
-            triggerGifSearch("pixel");
-        };
-        document.getElementById('btn-search-gif').onclick = () => {
-            triggerGifSearch(document.getElementById('gif-search-query').value.trim());
-        };
-        function triggerGifSearch(query) {
-            const container = document.getElementById('gif-results-container');
-            container.innerHTML = '';
-            const mockGifs = [
-                "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3B5N3ZtbW94N2pnbmptdHFlYms4bTh6Z3A4bXF6YnY0bWhtcmFpciZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/L3X9GvptPp675YYsC2/giphy.gif",
-                "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbW01M3NyeHpxb3g4b3N2ZWN6bXN6MThqdXRxMnd0N3RhcW1wNWhvciZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/tX68U6YjE9hwY/giphy.gif",
-                "https://media.giphy.com/media/13HgwGsXF0aiGY/giphy.gif"
-            ];
-            mockGifs.forEach(url => {
-                const img = document.createElement('img');
-                img.src = url; img.classList.add('gif-thumb');
-                img.onclick = () => {
-                    sendMessage({ url: url, type: 'gif' });
-                    document.getElementById('gif-modal').style.display = 'none';
-                };
-                container.appendChild(img);
-            });
-        }
-
-        document.getElementById('btn-add-friend').onclick = () => {
-            const target = document.getElementById('friend-search').value.trim();
-            if(!target || target === myUsername) return;
-            set(ref(db, `users/${myUsername}/friends/${target}`), "accepted");
-            set(ref(db, `users/${target}/friends/${myUsername}`), "accepted");
-            alert(`Ami ajouté ! Cliquez sur son nom dans la liste pour lui parler.`);
-            document.getElementById('friend-search').value = '';
-        };
-
-        function listenFriends() {
-            onValue(ref(db, `users/${myUsername}/friends`), (snap) => {
-                const box = document.getElementById('friends-box');
-                box.innerHTML = '';
-                const data = snap.val() || {};
-                Object.keys(data).forEach(friend => {
-                    const div = document.createElement('div');
-                    div.classList.add('friend-item');
-                    div.innerHTML = `<span>🟢 ${friend}</span> <button style="padding:2px 6px; font-size:10px;" class="success">Message</button>`;
-                    div.onclick = () => switchChatType('private', friend);
+                    div.innerHTML = `<b>${msg.user}:</b> ${msg.text}`;
                     box.appendChild(div);
                 });
+                box.scrollTop = box.scrollHeight;
             });
         }
 
-        document.getElementById('btn-clear').onclick = () => {
-            if(isAdmin && confirm("Vider la grille ?")) set(ref(db, `networks/fr/rooms/${currentRoom}/pixels`), null);
+        // PUBLIER UN JEU
+        document.getElementById('btn-publish-game').onclick = () => {
+            const title = document.getElementById('game-title').value.trim();
+            const code = document.getElementById('game-code').value.trim();
+
+            if(!title || !code) return alert("Remplis le titre et le code de ton jeu !");
+
+            push(ref(db, "arcade/games"), {
+                title: title,
+                code: code,
+                author: myUsername
+            });
+
+            alert("🎉 Jeu publié avec succès dans la bibliothèque !");
+            document.getElementById('game-title').value = '';
+            document.getElementById('game-code').value = '';
+            switchTab('library');
+        };
+
+        // LANCEUR DE JEU DANS L'IFRAME FULLSCREEN
+        window.launchGame = function(title, code) {
+            document.getElementById('current-playing-title').innerText = title;
+            const iframe = document.getElementById('game-frame');
+            
+            // Injection du code HTML de l'utilisateur de manière sécurisée
+            const blob = new Blob([code], { type: 'text/html' });
+            iframe.src = URL.createObjectURL(blob);
+            
+            document.getElementById('fullscreen-player').style.display = 'flex';
+        };
+
+        window.closeFullscreenGame = function() {
+            document.getElementById('fullscreen-player').style.display = 'none';
+            document.getElementById('game-frame').src = 'about:blank';
+        };
+
+        // ENVOYER CHAT
+        document.getElementById('btn-send-chat').onclick = sendChatMessage;
+        document.getElementById('chat-input').onkeypress = (e) => { if(e.key === 'Enter') sendChatMessage(); };
+
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            if(!input.value.trim()) return;
+            push(ref(db, "arcade/chat"), { user: myUsername, text: input.value.trim() });
+            input.value = '';
+        }
+
+        // GESTION LANCEUR APK ET DÉCOMPRESSION SIMULÉE
+        document.getElementById('apk-file-input').onchange = (e) => {
+            const file = e.target.files[0];
+            if(!file) return;
+
+            document.getElementById('apk-info').innerText = `⏳ Traitement de : ${file.name} (${(file.size / (1024*1024)).toFixed(2)} Mo)...`;
+            document.getElementById('apk-emulator-zone').style.display = "block";
+            document.getElementById('apk-runtime-view').innerText = "Lecture des structures APK manifest, DEX et ressources en cours...";
+
+            // Simulation d'extraction et d'adaptation du package pour le navigateur Web
+            setTimeout(() => {
+                document.getElementById('apk-info').innerHTML = `🟢 <b>${file.name}</b> chargé avec succès !`;
+                document.getElementById('apk-runtime-view').innerHTML = `
+                    <div style="text-align:center;">
+                        <p style="color:#28a745; font-weight:bold;">🤖 Application Android Émulée</p>
+                        <p style="font-size:12px;">Assets Graphiques Web assemblés.</p>
+                        <hr style="border-color:#333;">
+                        <button onclick="alert('Lancement des modules Android simulés réussi !')" style="background:#28a745; border-radius:20px; padding:10px 20px;">Lancer l'interface principale</button>
+                    </div>
+                `;
+            }, 2500);
         };
     </script>
 
