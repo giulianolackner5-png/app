@@ -9,11 +9,16 @@
         body { background: #f0f2f5; margin: 0; padding: 15px; display: flex; flex-direction: column; height: 100vh; }
         body { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
 
-        /* ÉCRAN DE MAINTENANCE CONTROLÉ PAR LE CODE */
-        #maintenance-screen { position: fixed; top:0; left:0; width:100vw; height:100vh; background:#1a1d20; color: white; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 99999; text-align: center; padding: 20px; }
+        /* PANEL ADMIN PRIVÉ */
+        #admin-panel { position: fixed; top:0; left:0; width:100vw; height:100vh; background:#111417; color: white; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 99999; text-align: center; padding: 20px; }
+        .admin-box { background: #22272e; padding: 30px; border-radius: 12px; box-shadow: 0 6px 25px rgba(0,0,0,0.7); width: 100%; max-width: 600px; border: 2px solid #dc3545; }
+
+        /* ÉCRAN DE MAINTENANCE POUR LES UTILISATEURS NORMAUX */
+        #maintenance-screen { position: fixed; top:0; left:0; width:100vw; height:100vh; background:#1a1d20; color: white; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 99998; text-align: center; padding: 20px; }
         .maintenance-box { background: #24292e; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); width: 100%; max-width: 500px; }
 
-        #auth-screen { position: fixed; top:0; left:0; width:100vw; height:100vh; background:#007bff; display:flex; align-items:center; justify-content:center; z-index:9998; }
+        /* ÉCRAN DE CONNEXION INITIAL */
+        #auth-screen { position: fixed; top:0; left:0; width:100vw; height:100vh; background:#007bff; display:flex; align-items:center; justify-content:center; z-index: 9997; }
         .auth-box { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 350px; text-align: center; }
         
         header { background: #24292e; color: white; padding: 10px 20px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
@@ -26,7 +31,6 @@
         button:hover { background: #0056b3; }
         button.danger { background: #dc3545; }
         button.success { background: #28a745; }
-        button.google-btn { background: #4285F4; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-top: 10px; }
 
         .tabs { display: flex; gap: 10px; margin-bottom: 15px; overflow-x: auto; }
         .tab-btn { background: #e4e6eb; color: #333; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: 600; white-space: nowrap; }
@@ -52,7 +56,7 @@
         #game-frame { flex: 1; border: none; background: white; }
         .player-bar { background: #24292e; color: white; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
 
-        /* SIDEBAR CHAT */
+        /* CHAT */
         .sidebar { flex: 1.2; min-width: 350px; display: flex; flex-direction: column; background: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); min-height: 0; }
         .chat-messages { flex: 1; overflow-y: auto; border: 1px solid #eee; padding: 10px; border-radius: 4px; margin-bottom: 10px; background: #fafafa; }
         .msg { margin-bottom: 10px; padding: 8px; border-radius: 8px; background: #e4e6eb; font-size: 13px; }
@@ -61,28 +65,38 @@
 </head>
 <body>
 
+    <div id="admin-panel">
+        <div class="admin-box">
+            <h2 style="color: #dc3545; margin-top: 0;">👑 Tableau de Bord Créateur</h2>
+            <p>Espace de gestion et de développement privé.</p>
+            
+            <div style="background: #1c2128; padding: 15px; border-radius: 6px; border: 1px solid #444; margin: 15px 0; text-align: left;">
+                <h4 style="margin: 0 0 5px 0; color: #aaa;">📝 Bloc-notes des modifications :</h4>
+                <textarea id="maintenance-notes" style="width: 100%; height: 100px; background: #111417; color: #fff; border: 1px solid #555; padding: 8px;" placeholder="Écris tes notes ici..."></textarea>
+            </div>
+
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button id="btn-admin-visit" class="success" style="padding: 12px 20px;">🌐 Voir le site (Mode Utilisateur)</button>
+                <button onclick="location.reload()" class="danger">🚪 Déconnexion</button>
+            </div>
+        </div>
+    </div>
+
     <div id="maintenance-screen">
         <div class="maintenance-box">
             <h2 style="color: #ffc107; margin-top: 0;">🛠️ Serveur en Maintenance</h2>
-            <p>Le site subit actuellement une mise à jour majeure. Seul l'administrateur peut se connecter.</p>
-            <hr style="border-color: #444; margin: 20px 0;">
-            <h4 style="text-align: left; margin-bottom: 5px; color: #aaa;">📝 Bloc-notes des modifications (Sauvegardé en local) :</h4>
-            <textarea id="maintenance-notes" style="width: 100%; height: 120px; background: #1a1d20; color: #fff; border: 1px solid #555;" placeholder="Écris tes notes ici..."></textarea>
-            <p style="font-size: 11px; color: #888; margin-top: 10px;">Change 'activateMaintenance' à false dans le code pour réouvrir à tout le monde.</p>
+            <p>Le site subit des modifications importantes. Les accès utilisateurs sont temporairement suspendus.</p>
+            <button onclick="location.reload()" class="success">🔄 Réessayer</button>
         </div>
     </div>
 
     <div id="auth-screen">
         <div class="auth-box">
             <h2>CréaWorld Network</h2>
-            <p style="font-size:12px; color:#666;">Connexion sécurisée en direct</p>
+            <p style="font-size:12px; color:#666;">Connecte-toi avec tes identifiants existants</p>
             <input type="text" id="auth-username" placeholder="Pseudo" style="width:100%; margin-bottom:10px;">
             <input type="password" id="auth-password" placeholder="Mot de passe" style="width:100%; margin-bottom:15px;">
-            <button id="btn-login" style="width:100%;" class="success">Connexion Pseudo</button>
-            
-            <button id="btn-google-login" class="google-btn">
-                <img src="https://cdn1.iconfinder.com/data/icons/google-s-logo/150/Google_Icons-09-512.png" width="18" alt="Google"> Se connecter avec Google
-            </button>
+            <button id="btn-login" style="width:100%;" class="success">Se connecter / S'inscrire</button>
         </div>
     </div>
 
@@ -99,7 +113,6 @@
     </div>
 
     <div class="main-content">
-        
         <div id="panel-draw" class="view-panel active">
             <div class="setup-panel" style="box-shadow:none; padding:0; margin-bottom:10px;">
                 <div class="setup-group">
@@ -151,7 +164,6 @@
                 <button id="btn-send-chat" class="success">▶</button>
             </div>
         </div>
-
     </div>
 
     <div id="fullscreen-player">
@@ -163,74 +175,110 @@
     </div>
 
     <script type="module">
-        // ==========================================
-        //         CONFIGURATION GLOBALE
-        // ==========================================
-        let activateMaintenance = true; // Active/Désactive la maintenance générale
-        let adminEmail = "ton.email@gmail.com"; // METS TON ADRESSE GOOGLE ICI
-        let adminUsername = "admin"; // Ton pseudo de secours si tu te connectes sans Google
+        // ========================================================
+        // 🛠️ CONFIGURATION DIRECTE DE LA MAINTENANCE
+        // ========================================================
+        let activateMaintenance = true;       // true = Fermé au public | false = Ouvert à tous
+        let adminUsername = "admin";           // Compte admin principal classique
+        let adminPassword = "1234";            // Mot de passe requis uniquement pour le compte 'admin'
+        let adminNewAccount = "createur99";    // Pseudo magique qui rentre SANS mot de passe en mode admin
 
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getDatabase, ref, set, push, onValue, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = { databaseURL: "https://appp-pixel-art-default-rtdb.europe-west1.firebasedatabase.app/" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const auth = getAuth(app);
-        const googleProvider = new GoogleAuthProvider();
 
         const GRID_SIZE = 40;
         let myUsername = "Joueur";
         let currentRoom = "general";
         let isDrawing = false;
+        let isAdmin = false;
 
         const gridContainer = document.getElementById('pixel-grid');
         const chatBox = document.getElementById('chat-box');
 
-        // Initialisation du bloc-notes local
+        // Récupération locale des notes
         document.getElementById('maintenance-notes').value = localStorage.getItem('creaworld_notes') || "";
         document.getElementById('maintenance-notes').addEventListener('input', (e) => {
             localStorage.setItem('creaworld_notes', e.target.value);
         });
 
-        // CONNEXION STANDARD VIA PSEUDO
+        // ACTION DE CONNEXION AVEC VÉRIFICATION VERITABLE SUR FIREBASE
         document.getElementById('btn-login').addEventListener('click', () => {
             const user = document.getElementById('auth-username').value.trim();
-            if(!user) return alert("Pseudo requis");
+            const pass = document.getElementById('auth-password').value.trim();
             
-            // Si maintenance, on vérifie si c'est le pseudo admin
-            if (activateMaintenance && user.toLowerCase() !== adminUsername.toLowerCase()) {
-                document.getElementById('maintenance-screen').style.display = 'flex';
+            if(!user) return alert("Indique un pseudo !");
+
+            // Étape 1 : Vérification si c'est l'adminNewAccount magique (Sans mot de passe)
+            if (user.toLowerCase() === adminNewAccount.toLowerCase()) {
+                isAdmin = true;
+                openAdminInterface(user);
                 return;
             }
-            
-            myUsername = user;
-            launchApp();
+
+            // Étape 2 : Vérification si c'est l'admin classique (Mot de passe en dur obligatoire)
+            if (user.toLowerCase() === adminUsername.toLowerCase()) {
+                if (pass === adminPassword) {
+                    isAdmin = true;
+                    openAdminInterface(user);
+                } else {
+                    alert("Mot de passe administrateur incorrect.");
+                }
+                return;
+            }
+
+            // Étape 3 : Vérification des anciens comptes enregistrés sur Firebase
+            const userRef = ref(db, 'users/' + user);
+            get(userRef).then((snapshot) => {
+                if (snapshot.exists()) {
+                    const userData = snapshot.val();
+                    // L'ancien compte existe : on valide si le mot de passe correspond
+                    if (userData.password === pass) {
+                        handleNormalUserLogin(user);
+                    } else {
+                        alert("Mot de passe incorrect pour cet ancien compte !");
+                    }
+                } else {
+                    // Si le compte n'existe pas du tout, on le crée automatiquement (Inscription)
+                    if(!pass) return alert("Choisis un mot de passe pour créer ton nouveau compte !");
+                    set(userRef, { password: pass }).then(() => {
+                        handleNormalUserLogin(user);
+                    });
+                }
+            }).catch((error) => {
+                alert("Erreur de connexion à la base de données : " + error.message);
+            });
         });
 
-        // CONNEXION AVEC GOOGLE
-        document.getElementById('btn-google-login').addEventListener('click', () => {
-            signInWithPopup(auth, googleProvider).then((result) => {
-                const email = result.user.email;
-                
-                // Si maintenance, on bloque si l'email ne correspond pas à l'admin
-                if (activateMaintenance && email !== adminEmail) {
-                    document.getElementById('maintenance-screen').style.display = 'flex';
-                    return;
-                }
+        function openAdminInterface(user) {
+            document.getElementById('auth-screen').style.display = "none";
+            document.getElementById('admin-panel').style.display = "flex"; 
+            myUsername = user;
+        }
 
-                myUsername = result.user.displayName || "Utilisateur Google";
+        function handleNormalUserLogin(user) {
+            myUsername = user;
+            if (activateMaintenance) {
+                // Si la maintenance est active, on dégage le login pour mettre l'écran de maintenance
+                document.getElementById('auth-screen').style.display = "none";
+                document.getElementById('maintenance-screen').style.display = "flex";
+            } else {
                 launchApp();
-            }).catch((error) => {
-                alert("Erreur d'authentification Google : " + error.message);
-            });
+            }
+        }
+
+        // Permet à l'admin de basculer du panel secret vers la vue réelle du site
+        document.getElementById('btn-admin-visit').addEventListener('click', () => {
+            document.getElementById('admin-panel').style.display = "none";
+            launchApp();
         });
 
         function launchApp() {
             document.getElementById('auth-screen').style.display = "none";
-            document.getElementById('maintenance-screen').style.display = "none";
-            document.getElementById('user-display').innerText = `👤 ${myUsername} ${activateMaintenance ? '(🛠️ Mode Admin)' : ''}`;
+            document.getElementById('user-display').innerText = `👤 ${myUsername} ${isAdmin ? '(👑 Admin)' : ''}`;
             buildGrid();
             startSync();
         }
