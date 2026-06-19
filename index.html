@@ -3,13 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CréaWorld Ultimate Hub</title>
+    <title>CréaWorld Super Hub</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: #f0f2f5; margin: 0; padding: 15px; display: flex; flex-direction: column; height: 100vh; }
         body { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
 
-        #auth-screen { position: fixed; top:0; left:0; width:100vw; height:100vh; background:#007bff; display:flex; align-items:center; justify-content:center; z-index:9999; }
+        /* ÉCRAN DE MAINTENANCE CONTROLÉ PAR LE CODE */
+        #maintenance-screen { position: fixed; top:0; left:0; width:100vw; height:100vh; background:#1a1d20; color: white; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 99999; text-align: center; padding: 20px; }
+        .maintenance-box { background: #24292e; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); width: 100%; max-width: 500px; }
+
+        #auth-screen { position: fixed; top:0; left:0; width:100vw; height:100vh; background:#007bff; display:flex; align-items:center; justify-content:center; z-index:9998; }
         .auth-box { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 350px; text-align: center; }
         
         header { background: #24292e; color: white; padding: 10px 20px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
@@ -22,7 +26,7 @@
         button:hover { background: #0056b3; }
         button.danger { background: #dc3545; }
         button.success { background: #28a745; }
-        button.warning { background: #ffc107; color: black; }
+        button.google-btn { background: #4285F4; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-top: 10px; }
 
         .tabs { display: flex; gap: 10px; margin-bottom: 15px; overflow-x: auto; }
         .tab-btn { background: #e4e6eb; color: #333; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: 600; white-space: nowrap; }
@@ -48,24 +52,37 @@
         #game-frame { flex: 1; border: none; background: white; }
         .player-bar { background: #24292e; color: white; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
 
-        /* SIDEBAR CHAT WHATSAPP */
+        /* SIDEBAR CHAT */
         .sidebar { flex: 1.2; min-width: 350px; display: flex; flex-direction: column; background: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); min-height: 0; }
         .chat-messages { flex: 1; overflow-y: auto; border: 1px solid #eee; padding: 10px; border-radius: 4px; margin-bottom: 10px; background: #fafafa; }
         .msg { margin-bottom: 10px; padding: 8px; border-radius: 8px; background: #e4e6eb; font-size: 13px; }
         .msg.me { background: #007bff; color: white; text-align: right; }
-        
-        /* EMULATEUR ECOUTEUR */
-        #apk-canvas-runtime { width: 100%; height: 100%; background: #222; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #aaa; overflow: hidden; position: relative; }
     </style>
 </head>
 <body>
 
+    <div id="maintenance-screen">
+        <div class="maintenance-box">
+            <h2 style="color: #ffc107; margin-top: 0;">🛠️ Serveur en Maintenance</h2>
+            <p>Le site subit actuellement une mise à jour majeure pour optimiser la vitesse et les connexions.</p>
+            <hr style="border-color: #444; margin: 20px 0;">
+            <h4 style="text-align: left; margin-bottom: 5px; color: #aaa;">📝 Bloc-notes des prochaines modifications (Réservé au créateur) :</h4>
+            <textarea id="maintenance-notes" style="width: 100%; height: 120px; background: #1a1d20; color: #fff; border: 1px solid #555;" placeholder="Écris tes idées ou notes de version ici..."></textarea>
+            <p style="font-size: 11px; color: #888; margin-top: 10px;">Modifie la ligne 'activateMaintenance' dans le code pour réouvrir le site.</p>
+        </div>
+    </div>
+
     <div id="auth-screen">
         <div class="auth-box">
             <h2>CréaWorld Network</h2>
+            <p style="font-size:12px; color:#666;">Connexion ultra-rapide optimisée</p>
             <input type="text" id="auth-username" placeholder="Pseudo" style="width:100%; margin-bottom:10px;">
             <input type="password" id="auth-password" placeholder="Mot de passe" style="width:100%; margin-bottom:15px;">
-            <button id="btn-login" style="width:100%;" class="success">Connexion / Inscription</button>
+            <button id="btn-login" style="width:100%;" class="success">Connexion Directe</button>
+            
+            <button id="btn-google-login" class="google-btn">
+                <img src="https://cdn1.iconfinder.com/data/icons/google-s-logo/150/Google_Icons-09-512.png" width="18" alt="Google"> Se connecter avec Google
+            </button>
         </div>
     </div>
 
@@ -79,7 +96,6 @@
         <button class="tab-btn" onclick="switchTab('library')">📚 Histoires</button>
         <button class="tab-btn" onclick="switchTab('arcade')">🕹️ Jeux de la Commu</button>
         <button class="tab-btn" onclick="switchTab('studio')">🛠️ Créer un Jeu</button>
-        <button class="tab-btn" onclick="switchTab('apk-launcher')">🤖 Lanceur APK v2</button>
     </div>
 
     <div class="main-content">
@@ -127,25 +143,6 @@
             </div>
         </div>
 
-        <div id="panel-apk-launcher" class="view-panel">
-            <h3>🤖 Véritable Émulateur & Décompilateur APK Web</h3>
-            <p style="color: #666; font-size:13px;">Sélectionne un fichier APK (Application Android). Le système va utiliser un compilateur JavaScript en temps réel pour tenter de traduire les fichiers <b>.dex</b> et <b>AndroidManifest</b> de ton application afin de l'ouvrir sur ton PC.</p>
-            
-            <div style="background: #e9ecef; padding: 20px; border-radius: 8px; text-align: center; border: 2px dashed #007bff; margin-bottom:15px;">
-                <input type="file" id="apk-file-input" accept=".apk" style="display: none;">
-                <button onclick="document.getElementById('apk-file-input').click()" class="warning">📁 Sélectionner l'APK sur ton PC</button>
-                <div id="apk-info" style="margin-top: 10px; font-weight: bold; font-size: 13px; color:#333;">Aucun fichier chargé</div>
-            </div>
-
-            <div id="apk-emulator-zone" style="display:none; flex:1; display:flex; flex-direction:column; align-items:center;">
-                <div style="width:330px; height:550px; background:#111; border: 14px solid #333; border-radius:30px; padding: 5px; box-shadow:0 10px 25px rgba(0,0,0,0.3);">
-                    <div id="apk-canvas-runtime">
-                        <div id="emulator-status-text">Prêt pour le chargement...</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <div class="sidebar">
             <h4>💬 Chat Mondial</h4>
             <div class="chat-messages" id="chat-box"></div>
@@ -165,15 +162,31 @@
         <iframe id="game-frame" width="100%" height="100%"></iframe>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-
     <script type="module">
+        // ==========================================
+        //  CONFIG MAINTENANCE (CHANGE ICI TRUE/FALSE)
+        // ==========================================
+        let activateMaintenance = true; 
+
+        // Initialisation de l'écran de maintenance direct
+        if (activateMaintenance) {
+            document.getElementById('maintenance-screen').style.display = 'flex';
+            // Charge les notes locales sauvegardées si existantes
+            document.getElementById('maintenance-notes').value = localStorage.getItem('creaworld_notes') || "";
+            document.getElementById('maintenance-notes').addEventListener('input', (e) => {
+                localStorage.setItem('creaworld_notes', e.target.value);
+            });
+        }
+
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = { databaseURL: "https://appp-pixel-art-default-rtdb.europe-west1.firebasedatabase.app/" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+        const auth = getAuth(app);
+        const googleProvider = new GoogleAuthProvider();
 
         const GRID_SIZE = 40;
         let myUsername = "Joueur";
@@ -183,16 +196,32 @@
         const gridContainer = document.getElementById('pixel-grid');
         const chatBox = document.getElementById('chat-box');
 
+        // CONNEXION STANDARD
         document.getElementById('btn-login').addEventListener('click', () => {
+            if(activateMaintenance) return;
             const user = document.getElementById('auth-username').value.trim();
             if(!user) return alert("Pseudo requis");
             myUsername = user;
+            launchApp();
+        });
+
+        // CONNEXION BOOSÉTE AVEC GOOGLE
+        document.getElementById('btn-google-login').addEventListener('click', () => {
+            if(activateMaintenance) return;
+            signInWithPopup(auth, googleProvider).then((result) => {
+                myUsername = result.user.displayName || "Utilisateur Google";
+                launchApp();
+            }).catch((error) => {
+                alert("Erreur d'authentification Google : " + error.message);
+            });
+        });
+
+        function launchApp() {
             document.getElementById('auth-screen').style.display = "none";
             document.getElementById('user-display').innerText = `👤 ${myUsername}`;
-            
             buildGrid();
             startSync();
-        });
+        }
 
         function buildGrid() {
             gridContainer.innerHTML = '';
@@ -301,66 +330,6 @@
             push(ref(db, "arcade/chat"), { user: myUsername, text: input.value.trim() });
             input.value = '';
         }
-
-        // --- ENTRAÎNEMENT DU VRAI MOTEUR DE LECTURE APK DANS LE NAVIGATEUR ---
-        document.getElementById('apk-file-input').onchange = function(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const infoDiv = document.getElementById('apk-info');
-            const zoneZone = document.getElementById('apk-emulator-zone');
-            const screenRuntime = document.getElementById('apk-canvas-runtime');
-
-            infoDiv.style.color = "#007bff";
-            infoDiv.innerText = `Analyse et décompression de l'APK : ${file.name}...`;
-            zoneZone.style.display = "block";
-            screenRuntime.innerHTML = `<div style='text-align:center; padding:20px; color:#ffc107;'>⚡ [Moteur APK] Extraction du package Android...</div>`;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const arrayBuffer = e.target.result;
-
-                // On utilise JSZip pour ouvrir l'APK (qui est en réalité une archive compressée)
-                JSZip.loadAsync(arrayBuffer).then(function(zip) {
-                    screenRuntime.innerHTML = `<div style='text-align:center; padding:20px; color:#28a745;'>📂 APK ouvert ! Recherche du sous-système web / assets...</div>`;
-                    
-                    // Étape 1 : On cherche si l'application possède des dossiers web compilés ou des assets HTML5/Cordova (ex: jeux récents, apps légères)
-                    let htmlFile = null;
-                    zip.forEach(function (relativePath, zipEntry) {
-                        if (relativePath.endsWith("index.html") && !htmlFile) {
-                            htmlFile = zipEntry;
-                        }
-                    });
-
-                    setTimeout(() => {
-                        if (htmlFile) {
-                            // Si c'est une application hybride/HTML5, on l'extrait et on l'exécute parfaitement !
-                            htmlFile.async("string").then(function(content) {
-                                infoDiv.innerHTML = `🟢 <b>${file.name}</b> chargé avec succès via WebView !`;
-                                screenRuntime.innerHTML = `<iframe srcdoc="${content.replace(/"/g, '&quot;')}" style="width:100%; height:100%; border:none; background:white;"></iframe>`;
-                            });
-                        } else {
-                            // Étape 2 : Si c'est un APK purement Java/C++ natif, un navigateur web classique sur PC ne peut pas l'exécuter sans émuler un processeur ARM entier. J'injecte donc une interface de simulation réactive pour interagir avec le package.
-                            infoDiv.innerHTML = `🟡 <b>${file.name}</b> détecté comme App Native (No-WebView)`;
-                            screenRuntime.innerHTML = `
-                                <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; padding:20px; text-align:center; background:#1e1e1e; color:#fff;">
-                                    <div style="font-size:40px; margin-bottom:10px;">📱</div>
-                                    <div style="font-weight:bold; color:#4caf50; margin-bottom:5px;">Package Android Compilé</div>
-                                    <div style="font-size:11px; color:#aaa; margin-bottom:15px;">Classes.dex & AndroidManifest lus. Moteur ARM virtuel initialisé.</div>
-                                    <button onclick="alert('Lancement de l\\'activité principale Android réussie sur PC !')" style="background:#007bff; color:white; border:none; padding:10px 15px; border-radius:20px; font-weight:bold; cursor:pointer;">Lancer l'App</button>
-                                </div>
-                            `;
-                        }
-                    }, 1500);
-
-                }).catch(function(err) {
-                    infoDiv.style.color = "#dc3545";
-                    infoDiv.innerText = "Erreur : Ce fichier n'est pas un APK Android valide.";
-                    screenRuntime.innerHTML = `<div style='color:#dc3545; padding:20px;'>💥 Échec du chargement de l'APK.</div>`;
-                });
-            };
-            reader.readAsArrayBuffer(file);
-        };
 
         document.getElementById('btn-clear').onclick = () => { if(confirm("Vider les pixels ?")) set(ref(db, `networks/fr/rooms/${currentRoom}/pixels`), null); };
     </script>
