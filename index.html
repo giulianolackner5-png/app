@@ -64,21 +64,21 @@
     <div id="maintenance-screen">
         <div class="maintenance-box">
             <h2 style="color: #ffc107; margin-top: 0;">🛠️ Serveur en Maintenance</h2>
-            <p>Le site subit actuellement une mise à jour majeure pour optimiser la vitesse et les connexions.</p>
+            <p>Le site subit actuellement une mise à jour majeure. Seul l'administrateur peut se connecter.</p>
             <hr style="border-color: #444; margin: 20px 0;">
-            <h4 style="text-align: left; margin-bottom: 5px; color: #aaa;">📝 Bloc-notes des prochaines modifications (Réservé au créateur) :</h4>
-            <textarea id="maintenance-notes" style="width: 100%; height: 120px; background: #1a1d20; color: #fff; border: 1px solid #555;" placeholder="Écris tes idées ou notes de version ici..."></textarea>
-            <p style="font-size: 11px; color: #888; margin-top: 10px;">Modifie la ligne 'activateMaintenance' dans le code pour réouvrir le site.</p>
+            <h4 style="text-align: left; margin-bottom: 5px; color: #aaa;">📝 Bloc-notes des modifications (Sauvegardé en local) :</h4>
+            <textarea id="maintenance-notes" style="width: 100%; height: 120px; background: #1a1d20; color: #fff; border: 1px solid #555;" placeholder="Écris tes notes ici..."></textarea>
+            <p style="font-size: 11px; color: #888; margin-top: 10px;">Change 'activateMaintenance' à false dans le code pour réouvrir à tout le monde.</p>
         </div>
     </div>
 
     <div id="auth-screen">
         <div class="auth-box">
             <h2>CréaWorld Network</h2>
-            <p style="font-size:12px; color:#666;">Connexion ultra-rapide optimisée</p>
+            <p style="font-size:12px; color:#666;">Connexion sécurisée en direct</p>
             <input type="text" id="auth-username" placeholder="Pseudo" style="width:100%; margin-bottom:10px;">
             <input type="password" id="auth-password" placeholder="Mot de passe" style="width:100%; margin-bottom:15px;">
-            <button id="btn-login" style="width:100%;" class="success">Connexion Directe</button>
+            <button id="btn-login" style="width:100%;" class="success">Connexion Pseudo</button>
             
             <button id="btn-google-login" class="google-btn">
                 <img src="https://cdn1.iconfinder.com/data/icons/google-s-logo/150/Google_Icons-09-512.png" width="18" alt="Google"> Se connecter avec Google
@@ -164,19 +164,11 @@
 
     <script type="module">
         // ==========================================
-        //  CONFIG MAINTENANCE (CHANGE ICI TRUE/FALSE)
+        //         CONFIGURATION GLOBALE
         // ==========================================
-        let activateMaintenance = true; 
-
-        // Initialisation de l'écran de maintenance direct
-        if (activateMaintenance) {
-            document.getElementById('maintenance-screen').style.display = 'flex';
-            // Charge les notes locales sauvegardées si existantes
-            document.getElementById('maintenance-notes').value = localStorage.getItem('creaworld_notes') || "";
-            document.getElementById('maintenance-notes').addEventListener('input', (e) => {
-                localStorage.setItem('creaworld_notes', e.target.value);
-            });
-        }
+        let activateMaintenance = true; // Active/Désactive la maintenance générale
+        let adminEmail = "ton.email@gmail.com"; // METS TON ADRESSE GOOGLE ICI
+        let adminUsername = "admin"; // Ton pseudo de secours si tu te connectes sans Google
 
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -196,19 +188,38 @@
         const gridContainer = document.getElementById('pixel-grid');
         const chatBox = document.getElementById('chat-box');
 
-        // CONNEXION STANDARD
+        // Initialisation du bloc-notes local
+        document.getElementById('maintenance-notes').value = localStorage.getItem('creaworld_notes') || "";
+        document.getElementById('maintenance-notes').addEventListener('input', (e) => {
+            localStorage.setItem('creaworld_notes', e.target.value);
+        });
+
+        // CONNEXION STANDARD VIA PSEUDO
         document.getElementById('btn-login').addEventListener('click', () => {
-            if(activateMaintenance) return;
             const user = document.getElementById('auth-username').value.trim();
             if(!user) return alert("Pseudo requis");
+            
+            // Si maintenance, on vérifie si c'est le pseudo admin
+            if (activateMaintenance && user.toLowerCase() !== adminUsername.toLowerCase()) {
+                document.getElementById('maintenance-screen').style.display = 'flex';
+                return;
+            }
+            
             myUsername = user;
             launchApp();
         });
 
-        // CONNEXION BOOSÉTE AVEC GOOGLE
+        // CONNEXION AVEC GOOGLE
         document.getElementById('btn-google-login').addEventListener('click', () => {
-            if(activateMaintenance) return;
             signInWithPopup(auth, googleProvider).then((result) => {
+                const email = result.user.email;
+                
+                // Si maintenance, on bloque si l'email ne correspond pas à l'admin
+                if (activateMaintenance && email !== adminEmail) {
+                    document.getElementById('maintenance-screen').style.display = 'flex';
+                    return;
+                }
+
                 myUsername = result.user.displayName || "Utilisateur Google";
                 launchApp();
             }).catch((error) => {
@@ -218,7 +229,8 @@
 
         function launchApp() {
             document.getElementById('auth-screen').style.display = "none";
-            document.getElementById('user-display').innerText = `👤 ${myUsername}`;
+            document.getElementById('maintenance-screen').style.display = "none";
+            document.getElementById('user-display').innerText = `👤 ${myUsername} ${activateMaintenance ? '(🛠️ Mode Admin)' : ''}`;
             buildGrid();
             startSync();
         }
