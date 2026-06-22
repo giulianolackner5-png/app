@@ -140,10 +140,10 @@
     </header>
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('draw')">✏️ Canvas Pixel (40x40)</button>
-        <button class="tab-btn" onclick="switchTab('library')">📚 Histoires</button>
-        <button class="tab-btn" onclick="switchTab('eagler')">⛏️ Eaglecraft (Minecraft)</button>
-        <button class="tab-btn" onclick="switchTab('studio')">🛠️ Dev Studio</button>
+        <button class="tab-btn active" onclick="switchTab('draw', this)">✏️ Canvas Pixel (40x40)</button>
+        <button class="tab-btn" onclick="switchTab('library', this)">📚 Histoires</button>
+        <button class="tab-btn" onclick="switchTab('eagler', this)">⛏️ Eaglecraft (Minecraft)</button>
+        <button class="tab-btn" onclick="switchTab('studio', this)">🛠️ Dev Studio</button>
     </div>
 
     <div class="main-content">
@@ -207,10 +207,7 @@
     </div>
 
     <script>
-        // Bloque le clic droit
         document.addEventListener('contextmenu', event => event.preventDefault());
-
-        // Bloque F12, Ctrl+Maj+I, Ctrl+Maj+J, Ctrl+U
         document.addEventListener('keydown', event => {
             if (event.keyCode === 123 || 
                 (event.ctrlKey && event.shiftKey && (event.keyCode === 73 || event.keyCode === 74)) || 
@@ -222,13 +219,7 @@
     </script>
 
     <script type="module">
-        // ========================================================
-        // 🛠️ CONFIGURATION DIRECTE DES COMPTES (REMIS EN DUR)
-        // ========================================================
         let activateMaintenance = true; 
-        let adminUsername = "nirrox";        // Ton compte admin principal
-        let adminPassword = "1234";          // Ton mot de passe admin principal
-        let adminNewAccount = "adminNew";    // Pseudo magique sans mot de passe requis
 
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, push, onValue, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -254,16 +245,9 @@
             const pass = document.getElementById('auth-password').value.trim();
             if(!user) return alert("Identifiant manquant.");
 
-            // Étape 1 : Vérification admin magique sans mot de passe
-            if (user.toLowerCase() === adminNewAccount.toLowerCase()) {
-                isAdmin = true;
-                openAdminInterface(user);
-                return;
-            }
-
-            // Étape 2 : Vérification admin classique (nirrox)
-            if (user.toLowerCase() === adminUsername.toLowerCase()) {
-                if (pass === adminPassword) {
+            // 1. Vérification des Comptes Privilégiés Fixes
+            if (user.toLowerCase() === "nirrox" || user.toLowerCase() === "admin") {
+                if (pass === "Giuliano2013") {
                     isAdmin = true;
                     openAdminInterface(user);
                 } else {
@@ -272,7 +256,7 @@
                 return;
             }
 
-            // Étape 3 : Anciens comptes et nouveaux joueurs sur Firebase
+            // 2. Gestion Firebase pour les autres comptes (et création dynamique d'adminNewAccount)
             const userRef = ref(db, 'users/' + user);
             get(userRef).then((snapshot) => {
                 if (snapshot.exists()) {
@@ -282,8 +266,11 @@
                         alert("Données d'accès incorrectes.");
                     }
                 } else {
-                    if(!pass) return alert("Crée ton mot de passe unique pour valider le compte.");
-                    set(userRef, { password: pass }).then(() => handleNormalUserLogin(user));
+                    // Si le compte n'existe pas, on le crée à la volée dans Firebase !
+                    if(!pass) return alert("Choisis un mot de passe pour créer ce nouveau compte.");
+                    set(userRef, { password: pass }).then(() => {
+                        handleNormalUserLogin(user);
+                    });
                 }
             });
         });
@@ -291,7 +278,7 @@
         document.getElementById('btn-google-login').addEventListener('click', () => {
             signInWithPopup(auth, googleProvider).then((result) => {
                 const name = result.user.displayName || "User Nexus";
-                if(name.toLowerCase() === adminNewAccount.toLowerCase() || name.toLowerCase() === adminUsername.toLowerCase()) {
+                if(name.toLowerCase() === "nirrox" || name.toLowerCase() === "admin") {
                     isAdmin = true;
                     openAdminInterface(name);
                 } else {
@@ -402,11 +389,12 @@
     </script>
 
     <script>
-        function switchTab(t) {
+        function switchTab(tabId, buttonElement) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
-            document.getElementById(`panel-${t}`).classList.add('active');
-            event.currentTarget.classList.add('active');
+            
+            document.getElementById(`panel-${tabId}`).classList.add('active');
+            buttonElement.classList.add('active');
         }
     </script>
 </body>
