@@ -8,7 +8,6 @@
         :root {
             --bg-main: #0a0c10;
             --bg-card: rgba(21, 26, 35, 0.7);
-            --border-glow: rgba(0, 123, 255, 0.3);
             --accent-primary: #007bff;
             --accent-neon: #00f2fe;
             --accent-purple: #9b51e0;
@@ -24,9 +23,9 @@
             color: var(--text-main);
             margin: 0; padding: 20px; display: flex; flex-direction: column; height: 100vh;
             overflow: hidden;
+            -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
         }
 
-        /* TABS CYBERPUNK */
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
         .tab-btn { 
             background: var(--bg-card); color: var(--text-muted); border: 1px solid rgba(255,255,255,0.05); 
@@ -39,7 +38,6 @@
             color: white; border: none; box-shadow: 0 0 15px rgba(0, 123, 255, 0.4);
         }
 
-        /* PANELS VITRÉS */
         .main-content { display: flex; gap: 20px; flex: 1; min-height: 0; }
         .view-panel { 
             display: none; flex: 1.8; background: var(--bg-card); border-radius: 16px; 
@@ -55,7 +53,6 @@
         }
         header h1 { margin: 0; font-size: 22px; font-weight: 800; background: linear-gradient(to right, #00f2fe, #4facfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-        /* ÉCRANS FIXES FULL DESIGN */
         #auth-screen, #maintenance-screen, #admin-panel { 
             position: fixed; top:0; left:0; width:100vw; height:100vh; 
             background: rgba(5, 7, 10, 0.95); backdrop-filter: blur(20px);
@@ -67,7 +64,6 @@
             text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.6);
         }
 
-        /* FORMULAIRES & INPUTS SMART */
         input, select, textarea { 
             width: 100%; padding: 12px 16px; background: rgba(0,0,0,0.3); 
             border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; 
@@ -87,18 +83,15 @@
         }
         button:hover { transform: translateY(-2px); filter: brightness(1.1); }
 
-        /* GRID PIXEL ART NEON */
         .canvas-container { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; overflow: auto; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 15px; }
         #pixel-grid { display: grid; background: rgba(255,255,255,0.05); gap: 1px; border: 1px solid rgba(255,255,255,0.1); }
         .pixel { width: 11px; height: 11px; background: #151a23; cursor: crosshair; transition: background-color 0.05s; }
 
-        /* CHAT SIDEBAR */
         .sidebar { flex: 1; min-width: 320px; max-width: 380px; display: flex; flex-direction: column; background: var(--bg-card); border-radius: 16px; padding: 20px; border: 1px solid rgba(255,255,255,0.08); }
         .chat-messages { flex: 1; overflow-y: auto; padding: 10px; border-radius: 10px; margin-bottom: 15px; background: rgba(0,0,0,0.2); }
         .msg { margin-bottom: 10px; padding: 10px 14px; border-radius: 12px 12px 12px 0; background: rgba(255,255,255,0.06); font-size: 13px; line-height: 1.4; }
         .msg.me { background: linear-gradient(135deg, var(--accent-primary), var(--accent-purple)); color: white; border-radius: 12px 12px 0 12px; text-align: right; }
 
-        /* EAGLERCRAFT CONTAINER */
         .eagler-container { flex: 1; display: flex; flex-direction: column; position: relative; border-radius: 12px; overflow: hidden; background: #000; }
         #eagler-frame { width: 100%; height: 100%; border: none; }
 
@@ -109,34 +102,34 @@
 
     <div id="admin-panel" style="display: none;">
         <div class="glass-box" style="max-width: 550px; border-color: var(--accent-purple);">
-            <h2 style="color: var(--accent-purple); margin-top:0;">🔮 Espace Super-Admin</h2>
-            <p style="color: var(--text-muted);">Gestion du réseau et bloc-notes en temps réel.</p>
-            <textarea id="maintenance-notes" style="height: 120px;" placeholder="Prends tes notes de dev ici..."></textarea>
+            <h2 style="color: var(--accent-purple); margin-top:0;">🔮 Espace Privé : Admin</h2>
+            <p style="color: var(--text-muted);">Gestion système et historique des notes.</p>
+            <textarea id="maintenance-notes" style="height: 120px;" placeholder="Écris tes mémos de mise à jour ici..."></textarea>
             <div style="display:flex; gap:10px; justify-content:center;">
-                <button id="btn-admin-visit" class="success">🌐 Entrer sur le site</button>
-                <button onclick="location.reload()" class="danger">🚪 Quitter</button>
+                <button id="btn-admin-visit" class="success">🌐 Entrer sur le Hub</button>
+                <button onclick="location.reload()" class="danger">🚪 Déconnexion</button>
             </div>
         </div>
     </div>
 
     <div id="maintenance-screen" style="display: none;">
         <div class="glass-box" style="border-color: var(--danger);">
-            <h2 style="color: var(--danger); margin-top:0;">🛠️ Système Locké</h2>
-            <p style="color: var(--text-muted);">Mise à jour en cours. Seuls les comptes privilégiés peuvent contourner cet écran.</p>
-            <button onclick="location.reload()" class="success" style="width:100%;">🔄 Actualiser le Hub</button>
+            <h2 style="color: var(--danger); margin-top:0;">🛠️ Maintenance Active</h2>
+            <p style="color: var(--text-muted);">Le réseau CréaWorld se refait une beauté. Revenez plus tard !</p>
+            <button onclick="location.reload()" class="success" style="width:100%;">🔄 Actualiser la page</button>
         </div>
     </div>
 
     <div id="auth-screen">
         <div class="glass-box">
-            <h2 style="background: linear-gradient(to right, #00f2fe, #9b51e0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-top:0;">Nexus Login</h2>
-            <p style="font-size:12px; color: var(--text-muted); margin-bottom:25px;">Connecte-toi ou crée ton compte admin à la volée</p>
-            <input type="text" id="auth-username" placeholder="Pseudo d'accès">
+            <h2 style="background: linear-gradient(to right, #00f2fe, #9b51e0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-top:0;">Nexus Gateway</h2>
+            <p style="font-size:12px; color: var(--text-muted); margin-bottom:25px;">Identification requise</p>
+            <input type="text" id="auth-username" placeholder="Nom d'utilisateur">
             <input type="password" id="auth-password" placeholder="Mot de passe">
-            <button id="btn-login" style="width:100%;" class="success">Entrer dans le Nexus</button>
+            <button id="btn-login" style="width:100%;" class="success">Se connecter / S'inscrire</button>
             
             <button id="btn-google-login" class="google-btn">
-                <img src="https://cdn1.iconfinder.com/data/icons/google-s-logo/150/Google_Icons-09-512.png" width="18" alt="Google"> Authentification Google
+                <img src="https://cdn1.iconfinder.com/data/icons/google-s-logo/150/Google_Icons-09-512.png" width="18" alt="Google"> Accéder via Google
             </button>
         </div>
     </div>
@@ -213,19 +206,35 @@
         <iframe id="game-frame" style="flex:1; border:none; background:#000;" src="about:blank"></iframe>
     </div>
 
+    <script>
+        // Bloque le clic droit
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        // Bloque F12, Ctrl+Maj+I, Ctrl+Maj+J, Ctrl+U
+        document.addEventListener('keydown', event => {
+            if (event.keyCode === 123 || 
+                (event.ctrlKey && event.shiftKey && (event.keyCode === 73 || event.keyCode === 74)) || 
+                (event.ctrlKey && event.keyCode === 85)) {
+                event.preventDefault();
+                return false;
+            }
+        });
+    </script>
+
     <script type="module">
+        // ========================================================
+        // 🛠️ CONFIGURATION DIRECTE DES COMPTES (REMIS EN DUR)
+        // ========================================================
         let activateMaintenance = true; 
-        let adminUsername = "admin";     
-        let adminPassword = "1234";      
-        let adminNewAccount = "createur99"; 
+        let adminUsername = "nirrox";        // Ton compte admin principal
+        let adminPassword = "1234";          // Ton mot de passe admin principal
+        let adminNewAccount = "adminNew";    // Pseudo magique sans mot de passe requis
 
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, push, onValue, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        const firebaseConfig = { 
-            databaseURL: "https://appp-pixel-art-default-rtdb.europe-west1.firebasedatabase.app/"
-        };
+        const firebaseConfig = { databaseURL: "https://appp-pixel-art-default-rtdb.europe-west1.firebasedatabase.app/" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
@@ -240,20 +249,30 @@
         document.getElementById('maintenance-notes').value = localStorage.getItem('creaworld_notes') || "";
         document.getElementById('maintenance-notes').addEventListener('input', (e) => localStorage.setItem('creaworld_notes', e.target.value));
 
-        // CONNEXION PSEUDO (INCLUSION DE LA CRÉATION DE COMPTE LIBRE SI IDENTIFIANTS RECONNUS)
         document.getElementById('btn-login').addEventListener('click', () => {
             const user = document.getElementById('auth-username').value.trim();
             const pass = document.getElementById('auth-password').value.trim();
             if(!user) return alert("Identifiant manquant.");
 
-            // Détection dynamique des droits Administrateurs à la création/connexion
-            if (user.toLowerCase() === adminNewAccount.toLowerCase() || (user.toLowerCase() === adminUsername.toLowerCase() && pass === adminPassword)) {
+            // Étape 1 : Vérification admin magique sans mot de passe
+            if (user.toLowerCase() === adminNewAccount.toLowerCase()) {
                 isAdmin = true;
                 openAdminInterface(user);
                 return;
             }
 
-            // Route d'authentification classique Firebase Realtime
+            // Étape 2 : Vérification admin classique (nirrox)
+            if (user.toLowerCase() === adminUsername.toLowerCase()) {
+                if (pass === adminPassword) {
+                    isAdmin = true;
+                    openAdminInterface(user);
+                } else {
+                    alert("Mot de passe administrateur incorrect.");
+                }
+                return;
+            }
+
+            // Étape 3 : Anciens comptes et nouveaux joueurs sur Firebase
             const userRef = ref(db, 'users/' + user);
             get(userRef).then((snapshot) => {
                 if (snapshot.exists()) {
@@ -269,18 +288,16 @@
             });
         });
 
-        // AUTHENTIFICATION VIA COMPTE GOOGLE TRADITIONNELLE
         document.getElementById('btn-google-login').addEventListener('click', () => {
             signInWithPopup(auth, googleProvider).then((result) => {
                 const name = result.user.displayName || "User Nexus";
-                // Vérifie si le compte Google matche aussi avec tes désignations admins
                 if(name.toLowerCase() === adminNewAccount.toLowerCase() || name.toLowerCase() === adminUsername.toLowerCase()) {
                     isAdmin = true;
                     openAdminInterface(name);
                 } else {
                     handleNormalUserLogin(name);
                 }
-            }).catch((e) => alert("Annulé ou bloqué : " + e.message));
+            }).catch((e) => alert("Action interrompue : " + e.message));
         });
 
         function openAdminInterface(user) {
@@ -358,7 +375,6 @@
             });
         }
 
-        // BOUTON PLEIN ECRAN MAGIQUE POUR EAGLERCRAFT
         window.fullscreenEagler = function() {
             document.getElementById('current-playing-title').innerText = "Eaglercraft Engine";
             document.getElementById('game-frame').src = "https://g.eaglercraft.com/";
