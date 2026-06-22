@@ -3,192 +3,233 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CréaWorld Super Hub</title>
+    <title>CréaWorld Nexus</title>
     <style>
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background: #f0f2f5; margin: 0; padding: 15px; display: flex; flex-direction: column; height: 100vh; }
-        body { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+        :root {
+            --bg-main: #0a0c10;
+            --bg-card: rgba(21, 26, 35, 0.7);
+            --border-glow: rgba(0, 123, 255, 0.3);
+            --accent-primary: #007bff;
+            --accent-neon: #00f2fe;
+            --accent-purple: #9b51e0;
+            --text-main: #f0f3f6;
+            --text-muted: #8b949e;
+            --danger: #ff4757;
+            --success: #2ed573;
+        }
 
-        /* PANEL ADMIN PRIVÉ */
-        #admin-panel { position: fixed; top:0; left:0; width:100vw; height:100vh; background:#111417; color: white; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 99999; text-align: center; padding: 20px; }
-        .admin-box { background: #22272e; padding: 30px; border-radius: 12px; box-shadow: 0 6px 25px rgba(0,0,0,0.7); width: 100%; max-width: 600px; border: 2px solid #dc3545; }
+        * { box-sizing: border-box; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        body { 
+            background: radial-gradient(circle at top, #141a29 0%, var(--bg-main) 100%); 
+            color: var(--text-main);
+            margin: 0; padding: 20px; display: flex; flex-direction: column; height: 100vh;
+            overflow: hidden;
+        }
 
-        /* ÉCRAN DE MAINTENANCE POUR LES UTILISATEURS NORMAUX */
-        #maintenance-screen { position: fixed; top:0; left:0; width:100vw; height:100vh; background:#1a1d20; color: white; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 99998; text-align: center; padding: 20px; }
-        .maintenance-box { background: #24292e; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); width: 100%; max-width: 500px; }
+        /* TABS CYBERPUNK */
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+        .tab-btn { 
+            background: var(--bg-card); color: var(--text-muted); border: 1px solid rgba(255,255,255,0.05); 
+            padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 600; 
+            transition: all 0.3s ease; white-space: nowrap; backdrop-filter: blur(10px);
+        }
+        .tab-btn:hover { color: var(--text-main); border-color: var(--accent-primary); }
+        .tab-btn.active { 
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-purple)); 
+            color: white; border: none; box-shadow: 0 0 15px rgba(0, 123, 255, 0.4);
+        }
 
-        /* ÉCRAN DE CONNEXION INITIAL */
-        #auth-screen { position: fixed; top:0; left:0; width:100vw; height:100vh; background:#007bff; display:flex; align-items:center; justify-content:center; z-index: 9997; }
-        .auth-box { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 350px; text-align: center; }
-        
-        header { background: #24292e; color: white; padding: 10px 20px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
-        header h1 { margin: 0; font-size: 20px; }
-
-        .setup-panel { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 15px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center; }
-        .setup-group { display: flex; align-items: center; gap: 8px; }
-        input, select, button, textarea { padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
-        button { background: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; }
-        button:hover { background: #0056b3; }
-        button.danger { background: #dc3545; }
-        button.success { background: #28a745; }
-
-        .tabs { display: flex; gap: 10px; margin-bottom: 15px; overflow-x: auto; }
-        .tab-btn { background: #e4e6eb; color: #333; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: 600; white-space: nowrap; }
-        .tab-btn.active { background: #007bff; color: white; }
-
-        .main-content { display: flex; gap: 15px; flex: 1; min-height: 0; }
-        .view-panel { display: none; flex: 1.5; background: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); min-height: 0; overflow-y: auto; }
+        /* PANELS VITRÉS */
+        .main-content { display: flex; gap: 20px; flex: 1; min-height: 0; }
+        .view-panel { 
+            display: none; flex: 1.8; background: var(--bg-card); border-radius: 16px; 
+            padding: 20px; border: 1px solid rgba(255,255,255,0.08); min-height: 0; overflow-y: auto;
+            backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
         .view-panel.active { display: flex; flex-direction: column; }
 
-        /* GRID PIXEL ART */
-        .canvas-container { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; overflow: auto; background: #fafafa; border-radius: 6px; padding: 10px; }
-        #pixel-grid { display: grid; background: #ddd; gap: 1px; border: 1px solid #999; }
-        .pixel { width: 10px; height: 10px; background: white; cursor: crosshair; }
+        header { 
+            background: var(--bg-card); padding: 15px 25px; border-radius: 16px; 
+            margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;
+            border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(10px);
+        }
+        header h1 { margin: 0; font-size: 22px; font-weight: 800; background: linear-gradient(to right, #00f2fe, #4facfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-        /* STORIES */
-        .story-card { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 6px; padding: 12px; margin-bottom: 10px; }
+        /* ÉCRANS FIXES FULL DESIGN */
+        #auth-screen, #maintenance-screen, #admin-panel { 
+            position: fixed; top:0; left:0; width:100vw; height:100vh; 
+            background: rgba(5, 7, 10, 0.95); backdrop-filter: blur(20px);
+            display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 20px;
+        }
+        .glass-box { 
+            background: rgba(20, 24, 33, 0.85); padding: 40px; border-radius: 24px; 
+            border: 1px solid rgba(255,255,255,0.1); width: 100%; max-width: 420px; 
+            text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+        }
 
-        /* ARCADE */
-        .game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; margin-top: 15px; }
-        .game-card { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 15px; text-align: center; }
+        /* FORMULAIRES & INPUTS SMART */
+        input, select, textarea { 
+            width: 100%; padding: 12px 16px; background: rgba(0,0,0,0.3); 
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; 
+            color: white; font-size: 14px; margin-bottom: 12px; transition: all 0.3s;
+        }
+        input:focus, select:focus, textarea:focus { border-color: var(--accent-neon); outline: none; box-shadow: 0 0 10px rgba(0, 242, 254, 0.2); }
         
-        #fullscreen-player { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: black; z-index: 10000; display: none; flex-direction: column; }
-        #game-frame { flex: 1; border: none; background: white; }
-        .player-bar { background: #24292e; color: white; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
+        button { 
+            padding: 12px 20px; border-radius: 10px; font-size: 14px; font-weight: 700; 
+            cursor: pointer; border: none; transition: all 0.2s ease;
+        }
+        button.success { background: linear-gradient(135deg, #2ed573, #7bed9f); color: #05070a; }
+        button.danger { background: linear-gradient(135deg, #ff4757, #ff6b81); color: white; }
+        button.google-btn { 
+            background: white; color: #151a23; display: flex; align-items: center; 
+            justify-content: center; gap: 10px; width: 100%; margin-top: 10px;
+        }
+        button:hover { transform: translateY(-2px); filter: brightness(1.1); }
 
-        /* CHAT */
-        .sidebar { flex: 1.2; min-width: 350px; display: flex; flex-direction: column; background: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); min-height: 0; }
-        .chat-messages { flex: 1; overflow-y: auto; border: 1px solid #eee; padding: 10px; border-radius: 4px; margin-bottom: 10px; background: #fafafa; }
-        .msg { margin-bottom: 10px; padding: 8px; border-radius: 8px; background: #e4e6eb; font-size: 13px; }
-        .msg.me { background: #007bff; color: white; text-align: right; }
+        /* GRID PIXEL ART NEON */
+        .canvas-container { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; overflow: auto; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 15px; }
+        #pixel-grid { display: grid; background: rgba(255,255,255,0.05); gap: 1px; border: 1px solid rgba(255,255,255,0.1); }
+        .pixel { width: 11px; height: 11px; background: #151a23; cursor: crosshair; transition: background-color 0.05s; }
+
+        /* CHAT SIDEBAR */
+        .sidebar { flex: 1; min-width: 320px; max-width: 380px; display: flex; flex-direction: column; background: var(--bg-card); border-radius: 16px; padding: 20px; border: 1px solid rgba(255,255,255,0.08); }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 10px; border-radius: 10px; margin-bottom: 15px; background: rgba(0,0,0,0.2); }
+        .msg { margin-bottom: 10px; padding: 10px 14px; border-radius: 12px 12px 12px 0; background: rgba(255,255,255,0.06); font-size: 13px; line-height: 1.4; }
+        .msg.me { background: linear-gradient(135deg, var(--accent-primary), var(--accent-purple)); color: white; border-radius: 12px 12px 0 12px; text-align: right; }
+
+        /* EAGLERCRAFT CONTAINER */
+        .eagler-container { flex: 1; display: flex; flex-direction: column; position: relative; border-radius: 12px; overflow: hidden; background: #000; }
+        #eagler-frame { width: 100%; height: 100%; border: none; }
+
+        #fullscreen-player { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: black; z-index: 10000; display: none; flex-direction: column; }
     </style>
 </head>
 <body>
 
-    <div id="admin-panel">
-        <div class="admin-box">
-            <h2 style="color: #dc3545; margin-top: 0;">👑 Tableau de Bord Créateur</h2>
-            <p>Espace de gestion et de développement privé.</p>
-            
-            <div style="background: #1c2128; padding: 15px; border-radius: 6px; border: 1px solid #444; margin: 15px 0; text-align: left;">
-                <h4 style="margin: 0 0 5px 0; color: #aaa;">📝 Bloc-notes des modifications :</h4>
-                <textarea id="maintenance-notes" style="width: 100%; height: 100px; background: #111417; color: #fff; border: 1px solid #555; padding: 8px;" placeholder="Écris tes notes ici..."></textarea>
-            </div>
-
-            <div style="display: flex; gap: 10px; justify-content: center;">
-                <button id="btn-admin-visit" class="success" style="padding: 12px 20px;">🌐 Voir le site (Mode Utilisateur)</button>
-                <button onclick="location.reload()" class="danger">🚪 Déconnexion</button>
+    <div id="admin-panel" style="display: none;">
+        <div class="glass-box" style="max-width: 550px; border-color: var(--accent-purple);">
+            <h2 style="color: var(--accent-purple); margin-top:0;">🔮 Espace Super-Admin</h2>
+            <p style="color: var(--text-muted);">Gestion du réseau et bloc-notes en temps réel.</p>
+            <textarea id="maintenance-notes" style="height: 120px;" placeholder="Prends tes notes de dev ici..."></textarea>
+            <div style="display:flex; gap:10px; justify-content:center;">
+                <button id="btn-admin-visit" class="success">🌐 Entrer sur le site</button>
+                <button onclick="location.reload()" class="danger">🚪 Quitter</button>
             </div>
         </div>
     </div>
 
-    <div id="maintenance-screen">
-        <div class="maintenance-box">
-            <h2 style="color: #ffc107; margin-top: 0;">🛠️ Serveur en Maintenance</h2>
-            <p>Le site subit des modifications importantes. Les accès utilisateurs sont temporairement suspendus.</p>
-            <button onclick="location.reload()" class="success">🔄 Réessayer</button>
+    <div id="maintenance-screen" style="display: none;">
+        <div class="glass-box" style="border-color: var(--danger);">
+            <h2 style="color: var(--danger); margin-top:0;">🛠️ Système Locké</h2>
+            <p style="color: var(--text-muted);">Mise à jour en cours. Seuls les comptes privilégiés peuvent contourner cet écran.</p>
+            <button onclick="location.reload()" class="success" style="width:100%;">🔄 Actualiser le Hub</button>
         </div>
     </div>
 
     <div id="auth-screen">
-        <div class="auth-box">
-            <h2>CréaWorld Network</h2>
-            <p style="font-size:12px; color:#666;">Connecte-toi avec tes identifiants existants</p>
-            <input type="text" id="auth-username" placeholder="Pseudo" style="width:100%; margin-bottom:10px;">
-            <input type="password" id="auth-password" placeholder="Mot de passe" style="width:100%; margin-bottom:15px;">
-            <button id="btn-login" style="width:100%;" class="success">Se connecter / S'inscrire</button>
+        <div class="glass-box">
+            <h2 style="background: linear-gradient(to right, #00f2fe, #9b51e0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-top:0;">Nexus Login</h2>
+            <p style="font-size:12px; color: var(--text-muted); margin-bottom:25px;">Connecte-toi ou crée ton compte admin à la volée</p>
+            <input type="text" id="auth-username" placeholder="Pseudo d'accès">
+            <input type="password" id="auth-password" placeholder="Mot de passe">
+            <button id="btn-login" style="width:100%;" class="success">Entrer dans le Nexus</button>
+            
+            <button id="btn-google-login" class="google-btn">
+                <img src="https://cdn1.iconfinder.com/data/icons/google-s-logo/150/Google_Icons-09-512.png" width="18" alt="Google"> Authentification Google
+            </button>
         </div>
     </div>
 
     <header>
-        <h1>🚀 CréaWorld Ultimate Hub</h1>
-        <div id="user-display" style="font-weight:bold;"></div>
+        <h1>⚡ CréaWorld Nexus v2</h1>
+        <div id="user-display" style="font-size: 14px; background: rgba(255,255,255,0.05); padding: 8px 16px; border-radius: 20px;"></div>
     </header>
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('draw')">✏️ Pixel Art (40x40)</button>
+        <button class="tab-btn active" onclick="switchTab('draw')">✏️ Canvas Pixel (40x40)</button>
         <button class="tab-btn" onclick="switchTab('library')">📚 Histoires</button>
-        <button class="tab-btn" onclick="switchTab('arcade')">🕹️ Jeux de la Commu</button>
-        <button class="tab-btn" onclick="switchTab('studio')">🛠️ Créer un Jeu</button>
+        <button class="tab-btn" onclick="switchTab('eagler')">⛏️ Eaglecraft (Minecraft)</button>
+        <button class="tab-btn" onclick="switchTab('studio')">🛠️ Dev Studio</button>
     </div>
 
     <div class="main-content">
         <div id="panel-draw" class="view-panel active">
-            <div class="setup-panel" style="box-shadow:none; padding:0; margin-bottom:10px;">
-                <div class="setup-group">
-                    <label>📁 Salon actuel :</label>
-                    <select id="room-select">
+            <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
+                <div style="display:flex; gap:15px; align-items:center;">
+                    <select id="room-select" style="width:200px; margin:0;">
                         <option value="general">Général #1</option>
-                        <option value="gaming">Gaming & Pixel #2</option>
-                        <option value="chill">Chill Zone #3</option>
+                        <option value="gaming">Gaming Room #2</option>
                     </select>
+                    <input type="color" id="color-picker" value="#00f2fe" style="width:50px; height:40px; padding:0; cursor:pointer; margin:0;">
                 </div>
-                <div class="setup-group">
-                    <label>🎨 Couleur :</label>
-                    <input type="color" id="color-picker" value="#000000">
-                </div>
-                <button id="btn-clear" class="danger" style="margin-left: auto;">Vider la grille</button>
+                <button id="btn-clear" class="danger">Effacer la matrice</button>
             </div>
             <div class="canvas-container"><div id="pixel-grid"></div></div>
         </div>
 
         <div id="panel-library" class="view-panel">
-            <h3>📖 Partager une histoire</h3>
-            <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">
-                <input type="text" id="story-title" placeholder="Titre...">
-                <textarea id="story-content" placeholder="Écris ton histoire..."></textarea>
-                <button id="btn-publish" class="success">Publier</button>
+            <h3>📖 Flux des Chroniques</h3>
+            <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
+                <input type="text" id="story-title" placeholder="Titre de la chronique...">
+                <textarea id="story-content" placeholder="Partage ton histoire..." style="height:100px;"></textarea>
+                <button id="btn-publish" class="success" style="align-self: flex-end;">Diffuser</button>
             </div>
             <div id="stories-box"></div>
         </div>
 
-        <div id="panel-arcade" class="view-panel">
-            <h3>🌍 Jeux créés par la communauté</h3>
-            <div class="game-grid" id="library-games-container"></div>
-        </div>
-
-        <div id="panel-studio" class="view-panel">
-            <h3>🛠️ Studio de Code HTML / JS</h3>
-            <div style="display:flex; flex-direction:column; gap:12px;">
-                <input type="text" id="game-title" placeholder="Nom du jeu">
-                <textarea id="game-code" placeholder="Colle ton code HTML..." style="height: 200px; font-family: monospace;"></textarea>
-                <button id="btn-publish-game" class="success">🚀 Publier le Jeu</button>
+        <div id="panel-eagler" class="view-panel">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <h3>⛏️ Instance Eaglercraft Client</h3>
+                <button onclick="fullscreenEagler()" class="success">🎵 Plein Écran</button>
+            </div>
+            <div class="eagler-container">
+                <iframe id="eagler-frame" src="https://g.eaglercraft.com/"></iframe>
             </div>
         </div>
 
+        <div id="panel-studio" class="view-panel">
+            <h3>🛠️ Injecteur de Sandbox Web</h3>
+            <input type="text" id="game-title" placeholder="Nom de l'application">
+            <textarea id="game-code" placeholder="Colle ton code source (HTML/JS/CSS)..." style="flex:1; font-family:monospace; min-height:180px;"></textarea>
+            <button id="btn-publish-game" class="success" style="margin-top:10px;">🚀 Compiler & Déployer</button>
+        </div>
+
         <div class="sidebar">
-            <h4>💬 Chat Mondial</h4>
+            <h4 style="margin-top:0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px; color: var(--accent-neon);">💬 Fréquence Réseau</h4>
             <div class="chat-messages" id="chat-box"></div>
-            <div style="display:flex; gap:5px;">
-                <input type="text" id="chat-input" placeholder="Écris un message..." style="flex:1;">
+            <div style="display:flex; gap:8px;">
+                <input type="text" id="chat-input" placeholder="Transmettre un signal..." style="margin:0;">
                 <button id="btn-send-chat" class="success">▶</button>
             </div>
         </div>
     </div>
 
     <div id="fullscreen-player">
-        <div class="player-bar">
-            <h3 id="current-playing-title" style="margin:0;">Jeu</h3>
-            <button onclick="closeFullscreenGame()" class="danger">❌ Quitter</button>
+        <div style="background:#111417; padding:10px 20px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #222;">
+            <h3 id="current-playing-title" style="margin:0; color:var(--accent-neon);">Console</h3>
+            <button onclick="closeFullscreenGame()" class="danger">❌ Quitter la session</button>
         </div>
-        <iframe id="game-frame" width="100%" height="100%"></iframe>
+        <iframe id="game-frame" style="flex:1; border:none; background:#000;" src="about:blank"></iframe>
     </div>
 
     <script type="module">
-        // ========================================================
-        // 🛠️ CONFIGURATION DIRECTE DE LA MAINTENANCE
-        // ========================================================
-        let activateMaintenance = true;       // true = Fermé au public | false = Ouvert à tous
-        let adminUsername = "admin";           // Compte admin principal classique
-        let adminPassword = "1234";            // Mot de passe requis uniquement pour le compte 'admin'
-        let adminNewAccount = "createur99";    // Pseudo magique qui rentre SANS mot de passe en mode admin
+        let activateMaintenance = true; 
+        let adminUsername = "admin";     
+        let adminPassword = "1234";      
+        let adminNewAccount = "createur99"; 
 
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, push, onValue, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        const firebaseConfig = { databaseURL: "https://appp-pixel-art-default-rtdb.europe-west1.firebasedatabase.app/" };
+        const firebaseConfig = { 
+            databaseURL: "https://appp-pixel-art-default-rtdb.europe-west1.firebasedatabase.app/"
+        };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+        const auth = getAuth(app);
+        const googleProvider = new GoogleAuthProvider();
 
         const GRID_SIZE = 40;
         let myUsername = "Joueur";
@@ -196,61 +237,50 @@
         let isDrawing = false;
         let isAdmin = false;
 
-        const gridContainer = document.getElementById('pixel-grid');
-        const chatBox = document.getElementById('chat-box');
-
-        // Récupération locale des notes
         document.getElementById('maintenance-notes').value = localStorage.getItem('creaworld_notes') || "";
-        document.getElementById('maintenance-notes').addEventListener('input', (e) => {
-            localStorage.setItem('creaworld_notes', e.target.value);
-        });
+        document.getElementById('maintenance-notes').addEventListener('input', (e) => localStorage.setItem('creaworld_notes', e.target.value));
 
-        // ACTION DE CONNEXION AVEC VÉRIFICATION VERITABLE SUR FIREBASE
+        // CONNEXION PSEUDO (INCLUSION DE LA CRÉATION DE COMPTE LIBRE SI IDENTIFIANTS RECONNUS)
         document.getElementById('btn-login').addEventListener('click', () => {
             const user = document.getElementById('auth-username').value.trim();
             const pass = document.getElementById('auth-password').value.trim();
-            
-            if(!user) return alert("Indique un pseudo !");
+            if(!user) return alert("Identifiant manquant.");
 
-            // Étape 1 : Vérification si c'est l'adminNewAccount magique (Sans mot de passe)
-            if (user.toLowerCase() === adminNewAccount.toLowerCase()) {
+            // Détection dynamique des droits Administrateurs à la création/connexion
+            if (user.toLowerCase() === adminNewAccount.toLowerCase() || (user.toLowerCase() === adminUsername.toLowerCase() && pass === adminPassword)) {
                 isAdmin = true;
                 openAdminInterface(user);
                 return;
             }
 
-            // Étape 2 : Vérification si c'est l'admin classique (Mot de passe en dur obligatoire)
-            if (user.toLowerCase() === adminUsername.toLowerCase()) {
-                if (pass === adminPassword) {
-                    isAdmin = true;
-                    openAdminInterface(user);
-                } else {
-                    alert("Mot de passe administrateur incorrect.");
-                }
-                return;
-            }
-
-            // Étape 3 : Vérification des anciens comptes enregistrés sur Firebase
+            // Route d'authentification classique Firebase Realtime
             const userRef = ref(db, 'users/' + user);
             get(userRef).then((snapshot) => {
                 if (snapshot.exists()) {
-                    const userData = snapshot.val();
-                    // L'ancien compte existe : on valide si le mot de passe correspond
-                    if (userData.password === pass) {
+                    if (snapshot.val().password === pass) {
                         handleNormalUserLogin(user);
                     } else {
-                        alert("Mot de passe incorrect pour cet ancien compte !");
+                        alert("Données d'accès incorrectes.");
                     }
                 } else {
-                    // Si le compte n'existe pas du tout, on le crée automatiquement (Inscription)
-                    if(!pass) return alert("Choisis un mot de passe pour créer ton nouveau compte !");
-                    set(userRef, { password: pass }).then(() => {
-                        handleNormalUserLogin(user);
-                    });
+                    if(!pass) return alert("Crée ton mot de passe unique pour valider le compte.");
+                    set(userRef, { password: pass }).then(() => handleNormalUserLogin(user));
                 }
-            }).catch((error) => {
-                alert("Erreur de connexion à la base de données : " + error.message);
             });
+        });
+
+        // AUTHENTIFICATION VIA COMPTE GOOGLE TRADITIONNELLE
+        document.getElementById('btn-google-login').addEventListener('click', () => {
+            signInWithPopup(auth, googleProvider).then((result) => {
+                const name = result.user.displayName || "User Nexus";
+                // Vérifie si le compte Google matche aussi avec tes désignations admins
+                if(name.toLowerCase() === adminNewAccount.toLowerCase() || name.toLowerCase() === adminUsername.toLowerCase()) {
+                    isAdmin = true;
+                    openAdminInterface(name);
+                } else {
+                    handleNormalUserLogin(name);
+                }
+            }).catch((e) => alert("Annulé ou bloqué : " + e.message));
         });
 
         function openAdminInterface(user) {
@@ -262,7 +292,6 @@
         function handleNormalUserLogin(user) {
             myUsername = user;
             if (activateMaintenance) {
-                // Si la maintenance est active, on dégage le login pour mettre l'écran de maintenance
                 document.getElementById('auth-screen').style.display = "none";
                 document.getElementById('maintenance-screen').style.display = "flex";
             } else {
@@ -270,7 +299,6 @@
             }
         }
 
-        // Permet à l'admin de basculer du panel secret vers la vue réelle du site
         document.getElementById('btn-admin-visit').addEventListener('click', () => {
             document.getElementById('admin-panel').style.display = "none";
             launchApp();
@@ -278,14 +306,15 @@
 
         function launchApp() {
             document.getElementById('auth-screen').style.display = "none";
-            document.getElementById('user-display').innerText = `👤 ${myUsername} ${isAdmin ? '(👑 Admin)' : ''}`;
+            document.getElementById('user-display').innerText = `🛸 Sync: ${myUsername} ${isAdmin ? '[ADMIN]' : ''}`;
             buildGrid();
             startSync();
         }
 
         function buildGrid() {
+            const gridContainer = document.getElementById('pixel-grid');
             gridContainer.innerHTML = '';
-            gridContainer.style.gridTemplateColumns = `repeat(${GRID_SIZE}, 10px)`;
+            gridContainer.style.gridTemplateColumns = `repeat(${GRID_SIZE}, 11px)`;
             for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
                 const pixel = document.createElement('div');
                 pixel.classList.add('pixel');
@@ -303,95 +332,57 @@
         function startSync() {
             onValue(ref(db, `networks/fr/rooms/${currentRoom}/pixels`), (snap) => {
                 const data = snap.val() || {};
-                document.querySelectorAll('.pixel').forEach((px, idx) => px.style.backgroundColor = data[idx] || '#ffffff');
+                document.querySelectorAll('.pixel').forEach((px, idx) => px.style.backgroundColor = data[idx] || '#151a23');
             });
 
-            document.getElementById('room-select').addEventListener('change', (e) => {
-                currentRoom = e.target.value;
-                buildGrid();
-            });
+            document.getElementById('room-select').addEventListener('change', (e) => { currentRoom = e.target.value; buildGrid(); });
 
             onValue(ref(db, "stories"), (snap) => {
-                const box = document.getElementById('stories-box');
-                box.innerHTML = '';
-                const data = snap.val() || {};
-                Object.values(data).forEach(s => {
-                    const div = document.createElement('div');
-                    div.classList.add('story-card');
-                    div.innerHTML = `<h4>${s.title}</h4><p>${s.content}</p><small>Par: ${s.author}</small>`;
+                const box = document.getElementById('stories-box'); box.innerHTML = '';
+                Object.values(snap.val() || {}).forEach(s => {
+                    const div = document.createElement('div'); div.style.background = 'rgba(255,255,255,0.03)';
+                    div.style.padding = '15px'; div.style.borderRadius = '10px'; div.style.marginBottom = '10px';
+                    div.innerHTML = `<h4 style="margin:0 0 5px 0; color:var(--accent-neon);">${s.title}</h4><p style="margin:0; font-size:13px;">${s.content}</p>`;
                     box.appendChild(div);
                 });
             });
 
-            onValue(ref(db, "arcade/games"), (snap) => {
-                const container = document.getElementById('library-games-container');
-                container.innerHTML = '';
-                const data = snap.val() || {};
-                Object.values(data).forEach(game => {
-                    const card = document.createElement('div');
-                    card.classList.add('game-card');
-                    card.innerHTML = `<h4>${game.title}</h4><p style="font-size:11px;">Par: ${game.author}</p><button class="success" style="width:100%;">▶ Jouer</button>`;
-                    card.querySelector('button').onclick = () => launchGame(game.title, game.code);
-                    container.appendChild(card);
-                });
-            });
-
             onValue(ref(db, "arcade/chat"), (snap) => {
-                chatBox.innerHTML = '';
-                const data = snap.val() || {};
-                Object.values(data).forEach(msg => {
-                    const div = document.createElement('div');
-                    div.classList.add('msg');
+                const chatBox = document.getElementById('chat-box'); chatBox.innerHTML = '';
+                Object.values(snap.val() || {}).forEach(msg => {
+                    const div = document.createElement('div'); div.classList.add('msg');
                     if(msg.user === myUsername) div.classList.add('me');
-                    div.innerHTML = `<b>${msg.user}:</b> ${msg.text}`;
-                    chatBox.appendChild(div);
+                    div.innerHTML = `<b>${msg.user}:</b> ${msg.text}`; chatBox.appendChild(div);
                 });
                 chatBox.scrollTop = chatBox.scrollHeight;
             });
         }
 
-        document.getElementById('btn-publish').onclick = () => {
-            const t = document.getElementById('story-title').value.trim();
-            const c = document.getElementById('story-content').value.trim();
-            if(t && c) {
-                push(ref(db, "stories"), { title: t, content: c, author: myUsername });
-                document.getElementById('story-title').value = '';
-                document.getElementById('story-content').value = '';
-            }
-        };
-
-        document.getElementById('btn-publish-game').onclick = () => {
-            const title = document.getElementById('game-title').value.trim();
-            const code = document.getElementById('game-code').value.trim();
-            if(title && code) {
-                push(ref(db, "arcade/games"), { title: title, code: code, author: myUsername });
-                alert("Jeu publié !");
-                switchTab('arcade');
-            }
-        };
-
-        window.launchGame = function(title, code) {
-            document.getElementById('current-playing-title').innerText = title;
-            const blob = new Blob([code], { type: 'text/html' });
-            document.getElementById('game-frame').src = URL.createObjectURL(blob);
+        // BOUTON PLEIN ECRAN MAGIQUE POUR EAGLERCRAFT
+        window.fullscreenEagler = function() {
+            document.getElementById('current-playing-title').innerText = "Eaglercraft Engine";
+            document.getElementById('game-frame').src = "https://g.eaglercraft.com/";
             document.getElementById('fullscreen-player').style.display = 'flex';
-        };
+        }
 
         window.closeFullscreenGame = function() {
             document.getElementById('fullscreen-player').style.display = 'none';
             document.getElementById('game-frame').src = 'about:blank';
-        };
+        }
 
         document.getElementById('btn-send-chat').onclick = sendMsg;
         document.getElementById('chat-input').onkeypress = (e) => { if(e.key==='Enter') sendMsg(); };
         function sendMsg() {
-            const input = document.getElementById('chat-input');
-            if(!input.value.trim()) return;
-            push(ref(db, "arcade/chat"), { user: myUsername, text: input.value.trim() });
-            input.value = '';
+            const input = document.getElementById('chat-input'); if(!input.value.trim()) return;
+            push(ref(db, "arcade/chat"), { user: myUsername, text: input.value.trim() }); input.value = '';
         }
 
-        document.getElementById('btn-clear').onclick = () => { if(confirm("Vider les pixels ?")) set(ref(db, `networks/fr/rooms/${currentRoom}/pixels`), null); };
+        document.getElementById('btn-publish').onclick = () => {
+            const t = document.getElementById('story-title').value.trim();
+            const c = document.getElementById('story-content').value.trim();
+            if(t && c) { push(ref(db, "stories"), { title: t, content: c, author: myUsername }); document.getElementById('story-title').value = ''; document.getElementById('story-content').value = ''; }
+        };
+        document.getElementById('btn-clear').onclick = () => { if(confirm("Vider la grille ?")) set(ref(db, `networks/fr/rooms/${currentRoom}/pixels`), null); };
     </script>
 
     <script>
