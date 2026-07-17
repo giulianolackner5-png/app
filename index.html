@@ -3,399 +3,262 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CréaWorld Nexus</title>
+    <title>Conquête & Pillage - Monde</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        :root {
-            --bg-main: #0a0c10;
-            --bg-card: rgba(21, 26, 35, 0.7);
-            --accent-primary: #007bff;
-            --accent-neon: #00f2fe;
-            --accent-purple: #9b51e0;
-            --text-main: #f0f3f6;
-            --text-muted: #8b949e;
-            --danger: #ff4757;
-            --success: #2ed573;
+        html, body, #map {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: #1a1a1a;
         }
-
-        * { box-sizing: border-box; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-        body { 
-            background: radial-gradient(circle at top, #141a29 0%, var(--bg-main) 100%); 
-            color: var(--text-main);
-            margin: 0; padding: 20px; display: flex; flex-direction: column; height: 100vh;
-            overflow: hidden;
-            -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
+        .leaflet-popup-content-wrapper, .leaflet-popup-tip {
+            background: #2d3748 !important;
+            color: #fff !important;
         }
-
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
-        .tab-btn { 
-            background: var(--bg-card); color: var(--text-muted); border: 1px solid rgba(255,255,255,0.05); 
-            padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 600; 
-            transition: all 0.3s ease; white-space: nowrap; backdrop-filter: blur(10px);
-        }
-        .tab-btn:hover { color: var(--text-main); border-color: var(--accent-primary); }
-        .tab-btn.active { 
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-purple)); 
-            color: white; border: none; box-shadow: 0 0 15px rgba(0, 123, 255, 0.4);
-        }
-
-        .main-content { display: flex; gap: 20px; flex: 1; min-height: 0; }
-        .view-panel { 
-            display: none; flex: 1.8; background: var(--bg-card); border-radius: 16px; 
-            padding: 20px; border: 1px solid rgba(255,255,255,0.08); min-height: 0; overflow-y: auto;
-            backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-        }
-        .view-panel.active { display: flex; flex-direction: column; }
-
-        header { 
-            background: var(--bg-card); padding: 15px 25px; border-radius: 16px; 
-            margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;
-            border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(10px);
-        }
-        header h1 { margin: 0; font-size: 22px; font-weight: 800; background: linear-gradient(to right, #00f2fe, #4facfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-
-        #auth-screen, #maintenance-screen, #admin-panel { 
-            position: fixed; top:0; left:0; width:100vw; height:100vh; 
-            background: rgba(5, 7, 10, 0.95); backdrop-filter: blur(20px);
-            display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 20px;
-        }
-        .glass-box { 
-            background: rgba(20, 24, 33, 0.85); padding: 40px; border-radius: 24px; 
-            border: 1px solid rgba(255,255,255,0.1); width: 100%; max-width: 420px; 
-            text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-        }
-
-        input, select, textarea { 
-            width: 100%; padding: 12px 16px; background: rgba(0,0,0,0.3); 
-            border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; 
-            color: white; font-size: 14px; margin-bottom: 12px; transition: all 0.3s;
-        }
-        input:focus, select:focus, textarea:focus { border-color: var(--accent-neon); outline: none; box-shadow: 0 0 10px rgba(0, 242, 254, 0.2); }
-        
-        button { 
-            padding: 12px 20px; border-radius: 10px; font-size: 14px; font-weight: 700; 
-            cursor: pointer; border: none; transition: all 0.2s ease;
-        }
-        button.success { background: linear-gradient(135deg, #2ed573, #7bed9f); color: #05070a; }
-        button.danger { background: linear-gradient(135deg, #ff4757, #ff6b81); color: white; }
-        button.google-btn { 
-            background: white; color: #151a23; display: flex; align-items: center; 
-            justify-content: center; gap: 10px; width: 100%; margin-top: 10px;
-        }
-        button:hover { transform: translateY(-2px); filter: brightness(1.1); }
-
-        .canvas-container { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; overflow: auto; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 15px; }
-        #pixel-grid { display: grid; background: rgba(255,255,255,0.05); gap: 1px; border: 1px solid rgba(255,255,255,0.1); }
-        .pixel { width: 11px; height: 11px; background: #151a23; cursor: crosshair; transition: background-color 0.05s; }
-
-        .sidebar { flex: 1; min-width: 320px; max-width: 380px; display: flex; flex-direction: column; background: var(--bg-card); border-radius: 16px; padding: 20px; border: 1px solid rgba(255,255,255,0.08); }
-        .chat-messages { flex: 1; overflow-y: auto; padding: 10px; border-radius: 10px; margin-bottom: 15px; background: rgba(0,0,0,0.2); }
-        .msg { margin-bottom: 10px; padding: 10px 14px; border-radius: 12px 12px 12px 0; background: rgba(255,255,255,0.06); font-size: 13px; line-height: 1.4; }
-        .msg.me { background: linear-gradient(135deg, var(--accent-primary), var(--accent-purple)); color: white; border-radius: 12px 12px 0 12px; text-align: right; }
-
-        .eagler-container { flex: 1; display: flex; flex-direction: column; position: relative; border-radius: 12px; overflow: hidden; background: #000; }
-        #eagler-frame { width: 100%; height: 100%; border: none; }
-
-        #fullscreen-player { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: black; z-index: 10000; display: none; flex-direction: column; }
     </style>
 </head>
-<body>
+<body class="flex flex-col h-screen text-white overflow-hidden">
 
-    <div id="admin-panel" style="display: none;">
-        <div class="glass-box" style="max-width: 550px; border-color: var(--accent-purple);">
-            <h2 style="color: var(--accent-purple); margin-top:0;">🔮 Espace Privé : Admin</h2>
-            <p style="color: var(--text-muted);">Gestion système et historique des notes.</p>
-            <textarea id="maintenance-notes" style="height: 120px;" placeholder="Écris tes mémos de mise à jour ici..."></textarea>
-            <div style="display:flex; gap:10px; justify-content:center;">
-                <button id="btn-admin-visit" class="success">🌐 Entrer sur le Hub</button>
-                <button onclick="location.reload()" class="danger">🚪 Déconnexion</button>
+    <header class="bg-gray-900 border-b border-gray-800 p-4 flex justify-between items-center z-[1000] shadow-md">
+        <div class="flex items-center space-x-6">
+            <h1 class="text-xl font-black tracking-wider text-red-500">WARZONE</h1>
+            <div id="hud-user-info" class="hidden flex items-center space-x-4">
+                <span class="text-sm text-gray-400">Joueur: <strong id="hud-username" class="text-white">-</strong></span>
+                <span class="text-sm text-gray-400">Or: <strong id="hud-gold" class="text-yellow-400">0 🪙</strong></span>
             </div>
         </div>
-    </div>
-
-    <div id="maintenance-screen" style="display: none;">
-        <div class="glass-box" style="border-color: var(--danger);">
-            <h2 style="color: var(--danger); margin-top:0;">🛠️ Maintenance Active</h2>
-            <p style="color: var(--text-muted);">Le réseau CréaWorld se refait une beauté. Revenez plus tard !</p>
-            <button onclick="location.reload()" class="success" style="width:100%;">🔄 Actualiser la page</button>
-        </div>
-    </div>
-
-    <div id="auth-screen">
-        <div class="glass-box">
-            <h2 style="background: linear-gradient(to right, #00f2fe, #9b51e0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-top:0;">Nexus Gateway</h2>
-            <p style="font-size:12px; color: var(--text-muted); margin-bottom:25px;">Identification requise</p>
-            <input type="text" id="auth-username" placeholder="Nom d'utilisateur">
-            <input type="password" id="auth-password" placeholder="Mot de passe">
-            <button id="btn-login" style="width:100%;" class="success">Se connecter / S'inscrire</button>
-            
-            <button id="btn-google-login" class="google-btn">
-                <img src="https://cdn1.iconfinder.com/data/icons/google-s-logo/150/Google_Icons-09-512.png" width="18" alt="Google"> Accéder via Google
+        <div>
+            <button id="auth-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition duration-200 text-sm">
+                Connexion Google
             </button>
         </div>
-    </div>
-
-    <header>
-        <h1>⚡ CréaWorld Nexus v2</h1>
-        <div id="user-display" style="font-size: 14px; background: rgba(255,255,255,0.05); padding: 8px 16px; border-radius: 20px;"></div>
     </header>
 
-    <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('draw', this)">✏️ Canvas Pixel (40x40)</button>
-        <button class="tab-btn" onclick="switchTab('library', this)">📚 Histoires</button>
-        <button class="tab-btn" onclick="switchTab('eagler', this)">⛏️ Eaglecraft (Minecraft)</button>
-        <button class="tab-btn" onclick="switchTab('studio', this)">🛠️ Dev Studio</button>
-    </div>
+    <div id="map" class="w-full flex-grow"></div>
 
-    <div class="main-content">
-        <div id="panel-draw" class="view-panel active">
-            <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
-                <div style="display:flex; gap:15px; align-items:center;">
-                    <select id="room-select" style="width:200px; margin:0;">
-                        <option value="general">Général #1</option>
-                        <option value="gaming">Gaming Room #2</option>
-                    </select>
-                    <input type="color" id="color-picker" value="#00f2fe" style="width:50px; height:40px; padding:0; cursor:pointer; margin:0;">
-                </div>
-                <button id="btn-clear" class="danger">Effacer la matrice</button>
-            </div>
-            <div class="canvas-container"><div id="pixel-grid"></div></div>
-        </div>
-
-        <div id="panel-library" class="view-panel">
-            <h3>📖 Flux des Chroniques</h3>
-            <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
-                <input type="text" id="story-title" placeholder="Titre de la chronique...">
-                <textarea id="story-content" placeholder="Partage ton histoire..." style="height:100px;"></textarea>
-                <button id="btn-publish" class="success" style="align-self: flex-end;">Diffuser</button>
-            </div>
-            <div id="stories-box"></div>
-        </div>
-
-        <div id="panel-eagler" class="view-panel">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <h3>⛏️ Instance Eaglercraft Client</h3>
-                <button onclick="fullscreenEagler()" class="success">🎵 Plein Écran</button>
-            </div>
-            <div class="eagler-container">
-                <iframe id="eagler-frame" src="https://g.eaglercraft.com/"></iframe>
-            </div>
-        </div>
-
-        <div id="panel-studio" class="view-panel">
-            <h3>🛠️ Injecteur de Sandbox Web</h3>
-            <input type="text" id="game-title" placeholder="Nom de l'application">
-            <textarea id="game-code" placeholder="Colle ton code source (HTML/JS/CSS)..." style="flex:1; font-family:monospace; min-height:180px;"></textarea>
-            <button id="btn-publish-game" class="success" style="margin-top:10px;">🚀 Compiler & Déployer</button>
-        </div>
-
-        <div class="sidebar">
-            <h4 style="margin-top:0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px; color: var(--accent-neon);">💬 Fréquence Réseau</h4>
-            <div class="chat-messages" id="chat-box"></div>
-            <div style="display:flex; gap:8px;">
-                <input type="text" id="chat-input" placeholder="Transmettre un signal..." style="margin:0;">
-                <button id="btn-send-chat" class="success">▶</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="fullscreen-player">
-        <div style="background:#111417; padding:10px 20px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #222;">
-            <h3 id="current-playing-title" style="margin:0; color:var(--accent-neon);">Console</h3>
-            <button onclick="closeFullscreenGame()" class="danger">❌ Quitter la session</button>
-        </div>
-        <iframe id="game-frame" style="flex:1; border:none; background:#000;" src="about:blank"></iframe>
-    </div>
-
-    <script>
-        document.addEventListener('contextmenu', event => event.preventDefault());
-        document.addEventListener('keydown', event => {
-            if (event.keyCode === 123 || 
-                (event.ctrlKey && event.shiftKey && (event.keyCode === 73 || event.keyCode === 74)) || 
-                (event.ctrlKey && event.keyCode === 85)) {
-                event.preventDefault();
-                return false;
-            }
-        });
-    </script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script type="module">
-        let activateMaintenance = true; 
-
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, push, onValue, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-        const firebaseConfig = { databaseURL: "https://appp-pixel-art-default-rtdb.europe-west1.firebasedatabase.app/" };
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const auth = getAuth(app);
+        // REUTILISATION FORCEE DU CODE D'INITIALISATION FIREBASE (v10)
+        import { initializeApp } from "https://gstatic.com"; 
+        import { getDatabase, ref, set, push, onValue, get } from "https://gstatic.com"; 
+        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://gstatic.com"; 
+        const firebaseConfig = { databaseURL: "https://firebasedatabase.app" }; 
+        const app = initializeApp(firebaseConfig); 
+        const db = getDatabase(app); 
+        const auth = getAuth(app); 
         const googleProvider = new GoogleAuthProvider();
 
-        const GRID_SIZE = 40;
-        let myUsername = "Joueur";
-        let currentRoom = "general";
-        let isDrawing = false;
-        let isAdmin = false;
+        // Variables globales du jeu
+        let currentUser = null;
+        let map;
+        let markersGroup = {};
 
-        document.getElementById('maintenance-notes').value = localStorage.getItem('creaworld_notes') || "";
-        document.getElementById('maintenance-notes').addEventListener('input', (e) => localStorage.setItem('creaworld_notes', e.target.value));
+        // Initialisation de la carte Leaflet (Style Sombre)
+        function initMap() {
+            map = L.map('map', { doubleClickZoom: false }).setView([20, 0], 2);
+            
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                maxZoom: 19
+            }).addTo(map);
 
-        document.getElementById('btn-login').addEventListener('click', () => {
-            const user = document.getElementById('auth-username').value.trim();
-            const pass = document.getElementById('auth-password').value.trim();
-            if(!user) return alert("Identifiant manquant.");
-
-            // 1. Vérification des Comptes Privilégiés Fixes
-            if (user.toLowerCase() === "nirrox" || user.toLowerCase() === "admin") {
-                if (pass === "Giuliano2013") {
-                    isAdmin = true;
-                    openAdminInterface(user);
-                } else {
-                    alert("Mot de passe administrateur incorrect.");
+            // Double-clic pour fonder une base
+            map.on('dblclick', function(e) {
+                if (!currentUser) {
+                    alert("Vous devez être connecté pour fonder une base !");
+                    return;
                 }
+                foundBase(e.latlng.lat, e.latlng.lng);
+            });
+        }
+
+        // Authentification
+        const authBtn = document.getElementById('auth-btn');
+        const hudUserInfo = document.getElementById('hud-user-info');
+        const hudUsername = document.getElementById('hud-username');
+        const hudGold = document.getElementById('hud-gold');
+
+        authBtn.addEventListener('click', () => {
+            if (!currentUser) {
+                signInWithPopup(auth, googleProvider)
+                    .then((result) => {
+                        // Géré par onAuthStateChanged
+                    }).catch((error) => {
+                        console.error("Erreur d'authentification:", error);
+                    });
+            } else {
+                auth.signOut().then(() => {
+                    currentUser = null;
+                    hudUserInfo.classList.add('hidden');
+                    authBtn.innerText = "Connexion Google";
+                });
+            }
+        });
+
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUser = user;
+                authBtn.innerText = "Déconnexion";
+                hudUserInfo.classList.remove('hidden');
+                
+                // Écouter les données spécifiques du joueur (Ressources)
+                const playerRef = ref(db, 'players/' + user.uid);
+                onValue(playerRef, (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        hudUsername.innerText = data.name || user.displayName;
+                        hudGold.innerText = (data.gold || 0) + " 🪙";
+                    } else {
+                        // Premier enregistrement du joueur s'il n'existe pas
+                        set(playerRef, {
+                            name: user.displayName,
+                            gold: 100
+                        });
+                    }
+                });
+            } else {
+                currentUser = null;
+                hudUserInfo.classList.add('hidden');
+                authBtn.innerText = "Connexion Google";
+            }
+        });
+
+        // Fonder une base
+        function foundBase(lat, lng) {
+            const baseRef = ref(db, 'bases/' + currentUser.uid);
+            // Vérifie si le joueur a déjà une base
+            get(baseRef).then((snapshot) => {
+                if (snapshot.exists()) {
+                    alert("Vous possédez déjà une base ! Elle va être déplacée.");
+                }
+                set(baseRef, {
+                    ownerId: currentUser.uid,
+                    ownerName: currentUser.displayName,
+                    lat: lat,
+                    lng: lng,
+                    hp: 100,
+                    lootableGold: 50
+                });
+            });
+        }
+
+        // Pillage d'une base adverse
+        window.pillardAction = function(targetOwnerId) {
+            if (!currentUser) return;
+            if (currentUser.uid === targetOwnerId) {
+                alert("Vous ne pouvez pas piller votre propre base !");
                 return;
             }
 
-            // 2. Gestion Firebase pour les autres comptes (et création dynamique d'adminNewAccount)
-            const userRef = ref(db, 'users/' + user);
-            get(userRef).then((snapshot) => {
-                if (snapshot.exists()) {
-                    if (snapshot.val().password === pass) {
-                        handleNormalUserLogin(user);
-                    } else {
-                        alert("Données d'accès incorrectes.");
+            const targetBaseRef = ref(db, 'bases/' + targetOwnerId);
+            const attackerRef = ref(db, 'players/' + currentUser.uid);
+
+            get(targetBaseRef).then((snapshot) => {
+                const base = snapshot.val();
+                if (!base || base.hp <= 0) {
+                    alert("Cette base est déjà détruite ou inexistante !");
+                    return;
+                }
+
+                const stolenGold = Math.min(base.lootableGold, 20); // Vole jusqu'à 20 pièces d'or
+                const newHp = Math.max(0, base.hp - 25); // Enlève 25 PV
+                const newLootable = Math.max(0, base.lootableGold - stolenGold);
+
+                if (stolenGold <= 0 && newHp <= 0) {
+                    alert("Rien à piller ici !");
+                    return;
+                }
+
+                // Mise à jour de la base de la victime
+                set(targetBaseRef, {
+                    ...base,
+                    hp: newHp,
+                    lootableGold: newLootable
+                });
+
+                // Mise à jour de l'or de l'attaquant
+                get(attackerRef).then((attSnapshot) => {
+                    const attData = attSnapshot.val();
+                    if (attData) {
+                        set(attackerRef, {
+                            ...attData,
+                            gold: (attData.gold || 0) + stolenGold
+                        });
                     }
-                } else {
-                    // Si le compte n'existe pas, on le crée à la volée dans Firebase !
-                    if(!pass) return alert("Choisis un mot de passe pour créer ce nouveau compte.");
-                    set(userRef, { password: pass }).then(() => {
-                        handleNormalUserLogin(user);
-                    });
-                }
-            });
-        });
-
-        document.getElementById('btn-google-login').addEventListener('click', () => {
-            signInWithPopup(auth, googleProvider).then((result) => {
-                const name = result.user.displayName || "User Nexus";
-                if(name.toLowerCase() === "nirrox" || name.toLowerCase() === "admin") {
-                    isAdmin = true;
-                    openAdminInterface(name);
-                } else {
-                    handleNormalUserLogin(name);
-                }
-            }).catch((e) => alert("Action interrompue : " + e.message));
-        });
-
-        function openAdminInterface(user) {
-            document.getElementById('auth-screen').style.display = "none";
-            document.getElementById('admin-panel').style.display = "flex"; 
-            myUsername = user;
-        }
-
-        function handleNormalUserLogin(user) {
-            myUsername = user;
-            if (activateMaintenance) {
-                document.getElementById('auth-screen').style.display = "none";
-                document.getElementById('maintenance-screen').style.display = "flex";
-            } else {
-                launchApp();
-            }
-        }
-
-        document.getElementById('btn-admin-visit').addEventListener('click', () => {
-            document.getElementById('admin-panel').style.display = "none";
-            launchApp();
-        });
-
-        function launchApp() {
-            document.getElementById('auth-screen').style.display = "none";
-            document.getElementById('user-display').innerText = `🛸 Sync: ${myUsername} ${isAdmin ? '[ADMIN]' : ''}`;
-            buildGrid();
-            startSync();
-        }
-
-        function buildGrid() {
-            const gridContainer = document.getElementById('pixel-grid');
-            gridContainer.innerHTML = '';
-            gridContainer.style.gridTemplateColumns = `repeat(${GRID_SIZE}, 11px)`;
-            for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
-                const pixel = document.createElement('div');
-                pixel.classList.add('pixel');
-                pixel.addEventListener('mousedown', (e) => { e.preventDefault(); isDrawing = true; drawPixel(i); });
-                pixel.addEventListener('mouseover', () => { if (isDrawing) drawPixel(i); });
-                gridContainer.appendChild(pixel);
-            }
-            window.addEventListener('mouseup', () => isDrawing = false);
-        }
-
-        function drawPixel(index) {
-            set(ref(db, `networks/fr/rooms/${currentRoom}/pixels/${index}`), document.getElementById('color-picker').value);
-        }
-
-        function startSync() {
-            onValue(ref(db, `networks/fr/rooms/${currentRoom}/pixels`), (snap) => {
-                const data = snap.val() || {};
-                document.querySelectorAll('.pixel').forEach((px, idx) => px.style.backgroundColor = data[idx] || '#151a23');
-            });
-
-            document.getElementById('room-select').addEventListener('change', (e) => { currentRoom = e.target.value; buildGrid(); });
-
-            onValue(ref(db, "stories"), (snap) => {
-                const box = document.getElementById('stories-box'); box.innerHTML = '';
-                Object.values(snap.val() || {}).forEach(s => {
-                    const div = document.createElement('div'); div.style.background = 'rgba(255,255,255,0.03)';
-                    div.style.padding = '15px'; div.style.borderRadius = '10px'; div.style.marginBottom = '10px';
-                    div.innerHTML = `<h4 style="margin:0 0 5px 0; color:var(--accent-neon);">${s.title}</h4><p style="margin:0; font-size:13px;">${s.content}</p>`;
-                    box.appendChild(div);
                 });
+
+                alert(`Pillage réussi ! Vous avez volé ${stolenGold} 🪙 et infligé 25 dégâts.`);
             });
-
-            onValue(ref(db, "arcade/chat"), (snap) => {
-                const chatBox = document.getElementById('chat-box'); chatBox.innerHTML = '';
-                Object.values(snap.val() || {}).forEach(msg => {
-                    const div = document.createElement('div'); div.classList.add('msg');
-                    if(msg.user === myUsername) div.classList.add('me');
-                    div.innerHTML = `<b>${msg.user}:</b> ${msg.text}`; chatBox.appendChild(div);
-                });
-                chatBox.scrollTop = chatBox.scrollHeight;
-            });
-        }
-
-        window.fullscreenEagler = function() {
-            document.getElementById('current-playing-title').innerText = "Eaglercraft Engine";
-            document.getElementById('game-frame').src = "https://g.eaglercraft.com/";
-            document.getElementById('fullscreen-player').style.display = 'flex';
-        }
-
-        window.closeFullscreenGame = function() {
-            document.getElementById('fullscreen-player').style.display = 'none';
-            document.getElementById('game-frame').src = 'about:blank';
-        }
-
-        document.getElementById('btn-send-chat').onclick = sendMsg;
-        document.getElementById('chat-input').onkeypress = (e) => { if(e.key==='Enter') sendMsg(); };
-        function sendMsg() {
-            const input = document.getElementById('chat-input'); if(!input.value.trim()) return;
-            push(ref(db, "arcade/chat"), { user: myUsername, text: input.value.trim() }); input.value = '';
-        }
-
-        document.getElementById('btn-publish').onclick = () => {
-            const t = document.getElementById('story-title').value.trim();
-            const c = document.getElementById('story-content').value.trim();
-            if(t && c) { push(ref(db, "stories"), { title: t, content: c, author: myUsername }); document.getElementById('story-title').value = ''; document.getElementById('story-content').value = ''; }
         };
-        document.getElementById('btn-clear').onclick = () => { if(confirm("Vider la grille ?")) set(ref(db, `networks/fr/rooms/${currentRoom}/pixels`), null); };
-    </script>
 
-    <script>
-        function switchTab(tabId, buttonElement) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
-            
-            document.getElementById(`panel-${tabId}`).classList.add('active');
-            buttonElement.classList.add('active');
+        // Synchronisation en temps réel des bases sur la carte
+        function syncBases() {
+            const basesRef = ref(db, 'bases');
+            onValue(basesRef, (snapshot) => {
+                const data = snapshot.val();
+                
+                // Supprimer les marqueurs qui ne sont plus dans la DB
+                for (let id in markersGroup) {
+                    if (!data || !data[id]) {
+                        map.removeLayer(markersGroup[id]);
+                        delete markersGroup[id];
+                    }
+                }
+
+                if (!data) return;
+
+                // Ajouter ou mettre à jour les marqueurs
+                Object.keys(data).forEach((key) => {
+                    const base = data[key];
+                    const isOwnBase = currentUser && currentUser.uid === base.ownerId;
+                    
+                    // Couleur du marqueur (Bleu pour le joueur, Rouge pour les ennemis, Gris si détruit)
+                    let markerColor = "red";
+                    if (isOwnBase) markerColor = "blue";
+                    if (base.hp <= 0) markerColor = "black";
+
+                    const customIcon = L.divIcon({
+                        className: 'custom-div-icon',
+                        html: `<div style="background-color:${markerColor}; width:12px; height:12px; border-radius:50%; border:2px solid white;"></div>`,
+                        iconSize: [12, 12]
+                    });
+
+                    const popupContent = `
+                        <div class="text-sm">
+                            <strong class="block text-base text-red-400">${base.ownerName}</strong>
+                            <div class="my-1">PV: <span class="font-bold">${base.hp}/100</span></div>
+                            <div class="my-1">Butin disponible: <span class="text-yellow-400 font-bold">${base.lootableGold} 🪙</span></div>
+                            ${(!isOwnBase && base.hp > 0) ? `
+                                <button onclick="window.pillardAction('${base.ownerId}')" class="mt-2 w-full bg-yellow-600 hover:bg-yellow-700 text-white text-xs font-bold py-1 px-2 rounded transition">
+                                    ⚔️ Piller la base
+                                </button>
+                            ` : ''}
+                            ${isOwnBase ? `<span class="text-xs text-blue-400 font-semibold block mt-1">Votre Quartier Général</span>` : ''}
+                            ${base.hp <= 0 ? `<span class="text-xs text-gray-400 font-semibold block mt-1">Base détruite</span>` : ''}
+                        </div>
+                    `;
+
+                    if (markersGroup[key]) {
+                        // Mise à jour de la position et du contenu de la bulle
+                        markersGroup[key].setLatLng([base.lat, base.lng]);
+                        markersGroup[key].setIcon(customIcon);
+                        markersGroup[key].setPopupContent(popupContent);
+                    } else {
+                        // Création du marqueur
+                        const marker = L.marker([base.lat, base.lng], { icon: customIcon }).addTo(map);
+                        marker.bindPopup(popupContent);
+                        markersGroup[key] = marker;
+                    }
+                });
+            });
         }
+
+        // Lancement initial
+        initMap();
+        syncBases();
     </script>
 </body>
 </html>
