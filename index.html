@@ -41,17 +41,18 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script type="module">
-        // REUTILISATION FORCEE DU CODE D'INITIALISATION FIREBASE (v10)
-        import { initializeApp } from "https://gstatic.com"; 
-        import { getDatabase, ref, set, push, onValue, get } from "https://gstatic.com"; 
-        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://gstatic.com"; 
+        // Liens d'importation corrigés au format CDN v10 pour éviter l'écran noir
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"; 
+        import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js"; 
+        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js"; 
+
+        // Ta configuration d'origine conservée telle quelle
         const firebaseConfig = { databaseURL: "https://firebasedatabase.app" }; 
         const app = initializeApp(firebaseConfig); 
         const db = getDatabase(app); 
         const auth = getAuth(app); 
         const googleProvider = new GoogleAuthProvider();
 
-        // Variables globales du jeu
         let currentUser = null;
         let map;
         let markersGroup = {};
@@ -65,7 +66,6 @@
                 maxZoom: 19
             }).addTo(map);
 
-            // Double-clic pour fonder une base
             map.on('dblclick', function(e) {
                 if (!currentUser) {
                     alert("Vous devez être connecté pour fonder une base !");
@@ -75,7 +75,6 @@
             });
         }
 
-        // Authentification
         const authBtn = document.getElementById('auth-btn');
         const hudUserInfo = document.getElementById('hud-user-info');
         const hudUsername = document.getElementById('hud-username');
@@ -83,12 +82,9 @@
 
         authBtn.addEventListener('click', () => {
             if (!currentUser) {
-                signInWithPopup(auth, googleProvider)
-                    .then((result) => {
-                        // Géré par onAuthStateChanged
-                    }).catch((error) => {
-                        console.error("Erreur d'authentification:", error);
-                    });
+                signInWithPopup(auth, googleProvider).catch((error) => {
+                    console.error("Erreur d'authentification:", error);
+                });
             } else {
                 auth.signOut().then(() => {
                     currentUser = null;
@@ -104,7 +100,6 @@
                 authBtn.innerText = "Déconnexion";
                 hudUserInfo.classList.remove('hidden');
                 
-                // Écouter les données spécifiques du joueur (Ressources)
                 const playerRef = ref(db, 'players/' + user.uid);
                 onValue(playerRef, (snapshot) => {
                     const data = snapshot.val();
@@ -112,7 +107,6 @@
                         hudUsername.innerText = data.name || user.displayName;
                         hudGold.innerText = (data.gold || 0) + " 🪙";
                     } else {
-                        // Premier enregistrement du joueur s'il n'existe pas
                         set(playerRef, {
                             name: user.displayName,
                             gold: 100
@@ -126,10 +120,8 @@
             }
         });
 
-        // Fonder une base
         function foundBase(lat, lng) {
             const baseRef = ref(db, 'bases/' + currentUser.uid);
-            // Vérifie si le joueur a déjà une base
             get(baseRef).then((snapshot) => {
                 if (snapshot.exists()) {
                     alert("Vous possédez déjà une base ! Elle va être déplacée.");
@@ -145,7 +137,6 @@
             });
         }
 
-        // Pillage d'une base adverse
         window.pillardAction = function(targetOwnerId) {
             if (!currentUser) return;
             if (currentUser.uid === targetOwnerId) {
@@ -159,27 +150,20 @@
             get(targetBaseRef).then((snapshot) => {
                 const base = snapshot.val();
                 if (!base || base.hp <= 0) {
-                    alert("Cette base est déjà détruite ou inexistante !");
+                    alert("Cette base est déjà détruite !");
                     return;
                 }
 
-                const stolenGold = Math.min(base.lootableGold, 20); // Vole jusqu'à 20 pièces d'or
-                const newHp = Math.max(0, base.hp - 25); // Enlève 25 PV
+                const stolenGold = Math.min(base.lootableGold, 20);
+                const newHp = Math.max(0, base.hp - 25);
                 const newLootable = Math.max(0, base.lootableGold - stolenGold);
 
-                if (stolenGold <= 0 && newHp <= 0) {
-                    alert("Rien à piller ici !");
-                    return;
-                }
-
-                // Mise à jour de la base de la victime
                 set(targetBaseRef, {
                     ...base,
                     hp: newHp,
                     lootableGold: newLootable
                 });
 
-                // Mise à jour de l'or de l'attaquant
                 get(attackerRef).then((attSnapshot) => {
                     const attData = attSnapshot.val();
                     if (attData) {
@@ -190,17 +174,15 @@
                     }
                 });
 
-                alert(`Pillage réussi ! Vous avez volé ${stolenGold} 🪙 et infligé 25 dégâts.`);
+                alert(`Pillage réussi ! +${stolenGold} 🪙 et -25 PV.`);
             });
         };
 
-        // Synchronisation en temps réel des bases sur la carte
         function syncBases() {
             const basesRef = ref(db, 'bases');
             onValue(basesRef, (snapshot) => {
                 const data = snapshot.val();
                 
-                // Supprimer les marqueurs qui ne sont plus dans la DB
                 for (let id in markersGroup) {
                     if (!data || !data[id]) {
                         map.removeLayer(markersGroup[id]);
@@ -210,12 +192,10 @@
 
                 if (!data) return;
 
-                // Ajouter ou mettre à jour les marqueurs
                 Object.keys(data).forEach((key) => {
                     const base = data[key];
                     const isOwnBase = currentUser && currentUser.uid === base.ownerId;
                     
-                    // Couleur du marqueur (Bleu pour le joueur, Rouge pour les ennemis, Gris si détruit)
                     let markerColor = "red";
                     if (isOwnBase) markerColor = "blue";
                     if (base.hp <= 0) markerColor = "black";
@@ -230,24 +210,22 @@
                         <div class="text-sm">
                             <strong class="block text-base text-red-400">${base.ownerName}</strong>
                             <div class="my-1">PV: <span class="font-bold">${base.hp}/100</span></div>
-                            <div class="my-1">Butin disponible: <span class="text-yellow-400 font-bold">${base.lootableGold} 🪙</span></div>
+                            <div class="my-1">Butin: <span class="text-yellow-400 font-bold">${base.lootableGold} 🪙</span></div>
                             ${(!isOwnBase && base.hp > 0) ? `
                                 <button onclick="window.pillardAction('${base.ownerId}')" class="mt-2 w-full bg-yellow-600 hover:bg-yellow-700 text-white text-xs font-bold py-1 px-2 rounded transition">
                                     ⚔️ Piller la base
                                 </button>
                             ` : ''}
-                            ${isOwnBase ? `<span class="text-xs text-blue-400 font-semibold block mt-1">Votre Quartier Général</span>` : ''}
-                            ${base.hp <= 0 ? `<span class="text-xs text-gray-400 font-semibold block mt-1">Base détruite</span>` : ''}
+                            ${isOwnBase ? `<span class="text-xs text-blue-400 font-semibold block mt-1">Votre base</span>` : ''}
+                            ${base.hp <= 0 ? `<span class="text-xs text-gray-400 font-semibold block mt-1">Détruite</span>` : ''}
                         </div>
                     `;
 
                     if (markersGroup[key]) {
-                        // Mise à jour de la position et du contenu de la bulle
                         markersGroup[key].setLatLng([base.lat, base.lng]);
                         markersGroup[key].setIcon(customIcon);
                         markersGroup[key].setPopupContent(popupContent);
                     } else {
-                        // Création du marqueur
                         const marker = L.marker([base.lat, base.lng], { icon: customIcon }).addTo(map);
                         marker.bindPopup(popupContent);
                         markersGroup[key] = marker;
@@ -256,7 +234,6 @@
             });
         }
 
-        // Lancement initial
         initMap();
         syncBases();
     </script>
