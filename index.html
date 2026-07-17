@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Conquête & Pillage - Monde</title>
+    <title>WARZONE - Tactique & Conquête</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -14,40 +14,49 @@
             background-color: #1a1a1a;
         }
         .leaflet-popup-content-wrapper, .leaflet-popup-tip {
-            background: #2d3748 !important;
+            background: #1f2937 !important;
             color: #fff !important;
+            border: 1px solid #374151;
         }
     </style>
 </head>
-<body class="flex flex-col h-screen text-white overflow-hidden">
+<body class="flex flex-col h-screen text-white overflow-hidden font-sans">
 
-    <header class="bg-gray-900 border-b border-gray-800 p-4 flex justify-between items-center z-[1000] shadow-md">
+    <header class="bg-gray-900 border-b border-gray-800 p-4 flex justify-between items-center z-[1000] shadow-xl">
         <div class="flex items-center space-x-6">
-            <h1 class="text-xl font-black tracking-wider text-red-500">WARZONE</h1>
-            <div id="hud-user-info" class="hidden flex items-center space-x-4">
-                <span class="text-sm text-gray-400">Joueur: <strong id="hud-username" class="text-white">-</strong></span>
-                <span class="text-sm text-gray-400">Or: <strong id="hud-gold" class="text-yellow-400">0 🪙</strong></span>
+            <h1 class="text-2xl font-black tracking-wider text-red-500 select-none">WARZONE</h1>
+            <div id="hud-user-info" class="hidden flex items-center space-x-6 bg-gray-800 px-4 py-1.5 rounded-full border border-gray-700">
+                <div class="flex items-center space-x-2">
+                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                    <span class="text-sm text-gray-300"><strong id="hud-username" class="text-white font-semibold">-</strong></span>
+                </div>
+                <span class="text-sm font-bold text-yellow-400">🪙 <span id="hud-gold">0</span></span>
             </div>
         </div>
-        <div>
-            <button id="auth-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition duration-200 text-sm">
+        
+        <div class="flex items-center space-x-4">
+            <div class="bg-gray-800 px-3 py-1.5 rounded-lg text-xs text-gray-400 border border-gray-700">
+                En ligne: <span id="online-count" class="text-green-400 font-bold">0</span>
+            </div>
+            <button id="auth-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-5 rounded-lg transition duration-200 text-sm shadow-md">
                 Connexion Google
             </button>
         </div>
     </header>
 
-    <div id="map" class="w-full flex-grow"></div>
+    <div id="map" class="w-full flex-grow z-10"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script type="module">
-        // Liens d'importation corrigés au format CDN v10 pour éviter l'écran noir
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"; 
-        import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js"; 
+        import { getDatabase, ref, set, onValue, get, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js"; 
         import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js"; 
 
-        // Ta configuration d'origine conservée telle quelle
-        const firebaseConfig = { databaseURL: "https://firebasedatabase.app" }; 
+        const firebaseConfig = { 
+            databaseURL: "https://mon-jeu-conquete-default-rtdb.firebaseio.com" 
+        }; 
+
         const app = initializeApp(firebaseConfig); 
         const db = getDatabase(app); 
         const auth = getAuth(app); 
@@ -57,12 +66,12 @@
         let map;
         let markersGroup = {};
 
-        // Initialisation de la carte Leaflet (Style Sombre)
+        // Initialisation de la carte
         function initMap() {
             map = L.map('map', { doubleClickZoom: false }).setView([20, 0], 2);
             
             L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                attribution: '&copy; CARTO',
                 maxZoom: 19
             }).addTo(map);
 
@@ -75,6 +84,7 @@
             });
         }
 
+        // Gestion Authentification & Présence
         const authBtn = document.getElementById('auth-btn');
         const hudUserInfo = document.getElementById('hud-user-info');
         const hudUsername = document.getElementById('hud-username');
@@ -82,14 +92,10 @@
 
         authBtn.addEventListener('click', () => {
             if (!currentUser) {
-                signInWithPopup(auth, googleProvider).catch((error) => {
-                    console.error("Erreur d'authentification:", error);
-                });
+                signInWithPopup(auth, googleProvider).catch((err) => console.error(err));
             } else {
                 auth.signOut().then(() => {
-                    currentUser = null;
-                    hudUserInfo.classList.add('hidden');
-                    authBtn.innerText = "Connexion Google";
+                    location.reload();
                 });
             }
         });
@@ -100,124 +106,97 @@
                 authBtn.innerText = "Déconnexion";
                 hudUserInfo.classList.remove('hidden');
                 
+                // Gérer le statut en ligne (Système de présence)
+                const onlineRef = ref(db, 'presence/' + user.uid);
+                set(onlineRef, { name: user.displayName, status: "online" });
+                onDisconnect(onlineRef).remove();
+
                 const playerRef = ref(db, 'players/' + user.uid);
                 onValue(playerRef, (snapshot) => {
                     const data = snapshot.val();
                     if (data) {
                         hudUsername.innerText = data.name || user.displayName;
-                        hudGold.innerText = (data.gold || 0) + " 🪙";
+                        hudGold.innerText = data.gold || 0;
                     } else {
-                        set(playerRef, {
-                            name: user.displayName,
-                            gold: 100
-                        });
+                        set(playerRef, { name: user.displayName, gold: 100 });
                     }
                 });
-            } else {
-                currentUser = null;
-                hudUserInfo.classList.add('hidden');
-                authBtn.innerText = "Connexion Google";
             }
         });
 
+        // Compteur de joueurs en ligne
+        onValue(ref(db, 'presence'), (snapshot) => {
+            const onlineUsers = snapshot.val();
+            const count = onlineUsers ? Object.keys(onlineUsers).length : 0;
+            document.getElementById('online-count').innerText = count;
+        });
+
+        // Fonder une base
         function foundBase(lat, lng) {
             const baseRef = ref(db, 'bases/' + currentUser.uid);
-            get(baseRef).then((snapshot) => {
-                if (snapshot.exists()) {
-                    alert("Vous possédez déjà une base ! Elle va être déplacée.");
-                }
-                set(baseRef, {
-                    ownerId: currentUser.uid,
-                    ownerName: currentUser.displayName,
-                    lat: lat,
-                    lng: lng,
-                    hp: 100,
-                    lootableGold: 50
-                });
+            set(baseRef, {
+                ownerId: currentUser.uid,
+                ownerName: currentUser.displayName,
+                lat: lat,
+                lng: lng,
+                hp: 100,
+                lootableGold: 50
             });
         }
 
+        // Pillage globalisé
         window.pillardAction = function(targetOwnerId) {
             if (!currentUser) return;
-            if (currentUser.uid === targetOwnerId) {
-                alert("Vous ne pouvez pas piller votre propre base !");
-                return;
-            }
-
             const targetBaseRef = ref(db, 'bases/' + targetOwnerId);
             const attackerRef = ref(db, 'players/' + currentUser.uid);
 
             get(targetBaseRef).then((snapshot) => {
                 const base = snapshot.val();
-                if (!base || base.hp <= 0) {
-                    alert("Cette base est déjà détruite !");
-                    return;
-                }
+                if (!base || base.hp <= 0) return;
 
                 const stolenGold = Math.min(base.lootableGold, 20);
-                const newHp = Math.max(0, base.hp - 25);
-                const newLootable = Math.max(0, base.lootableGold - stolenGold);
-
-                set(targetBaseRef, {
-                    ...base,
-                    hp: newHp,
-                    lootableGold: newLootable
-                });
-
+                set(targetBaseRef, { ...base, hp: Math.max(0, base.hp - 25), lootableGold: Math.max(0, base.lootableGold - stolenGold) });
                 get(attackerRef).then((attSnapshot) => {
                     const attData = attSnapshot.val();
-                    if (attData) {
-                        set(attackerRef, {
-                            ...attData,
-                            gold: (attData.gold || 0) + stolenGold
-                        });
-                    }
+                    if (attData) set(attackerRef, { ...attData, gold: (attData.gold || 0) + stolenGold });
                 });
-
-                alert(`Pillage réussi ! +${stolenGold} 🪙 et -25 PV.`);
             });
         };
 
+        // Synchronisation en temps réel des bases
         function syncBases() {
             const basesRef = ref(db, 'bases');
             onValue(basesRef, (snapshot) => {
-                const data = snapshot.val();
-                
+                const data = snapshot.val() || {};
+
+                // Nettoyage des anciens marqueurs
                 for (let id in markersGroup) {
-                    if (!data || !data[id]) {
-                        map.removeLayer(markersGroup[id]);
-                        delete markersGroup[id];
-                    }
+                    if (!data[id]) { map.removeLayer(markersGroup[id]); delete markersGroup[id]; }
                 }
 
-                if (!data) return;
-
+                // Rendu des marqueurs actifs
                 Object.keys(data).forEach((key) => {
                     const base = data[key];
                     const isOwnBase = currentUser && currentUser.uid === base.ownerId;
-                    
-                    let markerColor = "red";
-                    if (isOwnBase) markerColor = "blue";
-                    if (base.hp <= 0) markerColor = "black";
+
+                    let markerColor = isOwnBase ? "#3b82f6" : "#ef4444";
+                    if (base.hp <= 0) markerColor = "#4b5563";
 
                     const customIcon = L.divIcon({
-                        className: 'custom-div-icon',
-                        html: `<div style="background-color:${markerColor}; width:12px; height:12px; border-radius:50%; border:2px solid white;"></div>`,
-                        iconSize: [12, 12]
+                        className: 'custom-icon',
+                        html: `<div style="background-color:${markerColor}; width:14px; height:14px; border-radius:50%; border:2px solid #fff; box-shadow: 0 0 8px ${markerColor};"></div>`,
+                        iconSize: [14, 14]
                     });
 
                     const popupContent = `
-                        <div class="text-sm">
-                            <strong class="block text-base text-red-400">${base.ownerName}</strong>
-                            <div class="my-1">PV: <span class="font-bold">${base.hp}/100</span></div>
-                            <div class="my-1">Butin: <span class="text-yellow-400 font-bold">${base.lootableGold} 🪙</span></div>
-                            ${(!isOwnBase && base.hp > 0) ? `
-                                <button onclick="window.pillardAction('${base.ownerId}')" class="mt-2 w-full bg-yellow-600 hover:bg-yellow-700 text-white text-xs font-bold py-1 px-2 rounded transition">
-                                    ⚔️ Piller la base
-                                </button>
-                            ` : ''}
-                            ${isOwnBase ? `<span class="text-xs text-blue-400 font-semibold block mt-1">Votre base</span>` : ''}
-                            ${base.hp <= 0 ? `<span class="text-xs text-gray-400 font-semibold block mt-1">Détruite</span>` : ''}
+                        <div class="text-sm p-1">
+                            <strong class="block text-base text-red-400 font-bold mb-1">${base.ownerName}</strong>
+                            <div class="w-full bg-gray-700 h-1.5 rounded-full mb-2 overflow-hidden">
+                                <div class="bg-green-500 h-full" style="width: ${base.hp}%"></div>
+                            </div>
+                            <div class="text-xs text-gray-300">Santé structure : <span class="font-bold text-white">${base.hp}/100</span></div>
+                            <div class="text-xs text-gray-300 mb-2">Trésor : <span class="text-yellow-400 font-bold">${base.lootableGold} 🪙</span></div>
+                            ${(!isOwnBase && base.hp > 0) ? `<button onclick="window.pillardAction('${base.ownerId}')" class="w-full bg-yellow-600 hover:bg-yellow-500 text-white text-xs font-bold py-1.5 px-2 rounded transition uppercase tracking-wide">⚔️ Lancer l'assaut</button>` : ''}
                         </div>
                     `;
 
