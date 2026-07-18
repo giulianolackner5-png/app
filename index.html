@@ -29,13 +29,26 @@
             border-radius: 12px;
             text-align: center;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            max-width: 400px;
+            width: 100%;
+            max-width: 350px;
+        }
+        .login-box input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 12px;
+            background: #18191a;
+            border: 1px solid #4e4f50;
+            color: white;
+            border-radius: 6px;
+            box-sizing: border-box;
+            outline: none;
         }
         .login-box button {
+            width: 100%;
             background-color: #2374e1;
             color: white;
             border: none;
-            padding: 12px 24px;
+            padding: 12px;
             font-size: 16px;
             font-weight: bold;
             border-radius: 6px;
@@ -44,6 +57,13 @@
             transition: background 0.2s;
         }
         .login-box button:hover { background-color: #1865cf; }
+        
+        /* Bouton Invité */
+        .login-box .btn-guest {
+            background-color: #4e4f50;
+            margin-top: 10px;
+        }
+        .login-box .btn-guest:hover { background-color: #606263; }
 
         /* Barre de Navigation */
         .navbar {
@@ -194,9 +214,14 @@
 
     <div id="login-screen">
         <div class="login-box">
-            <h2>Accès Sécurisé</h2>
-            <p>Pour éviter les bots, tu devez obligatoirement vous connecter avec Google et activer les notifications pour accéder à la plateforme.</p>
-            <button id="btn-login">Se connecter avec Google</button>
+            <h2 id="login-title">Connexion</h2>
+            <p>Connecte-toi ou accède directement au site en mode invité.</p>
+            
+            <input type="text" id="login-username" placeholder="Pseudo">
+            <input type="password" id="login-password" placeholder="Mot de passe">
+            
+            <button id="btn-submit-auth">Se connecter / S'inscrire</button>
+            <button id="btn-guest-auth" class="btn-guest">Mode Invité 👤</button>
         </div>
     </div>
 
@@ -243,7 +268,7 @@
                         <hr style="border-color:#3a3b3c; margin: 20px 0;">
 
                         <h3>Modération (Anti-Bot / Bans)</h3>
-                        <input type="text" id="ban-user-id" placeholder="ID Unique de l'utilisateur à bannir">
+                        <input type="text" id="ban-user-username" placeholder="Pseudo exact du joueur à bannir">
                         <button style="background:#e41e3f;" onclick="banUser()">Bannir définitivement</button>
                     </div>
                 </section>
@@ -266,9 +291,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-        // Ta configuration exacte mise à jour
         const firebaseConfig = {
             apiKey: "AIzaSyB-mxZaaZ0FQjpviCskritvjiNXYQ5-mBY",
             authDomain: "mon-reseau-jeux.firebaseapp.com",
@@ -282,76 +305,110 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const auth = getAuth(app);
-        const googleProvider = new GoogleAuthProvider();
+
+        let currentUser = null;
 
         const loginScreen = document.getElementById('login-screen');
         const appScreen = document.getElementById('app-screen');
-        const btnLogin = document.getElementById('btn-login');
+        const btnSubmitAuth = document.getElementById('btn-submit-auth');
+        const btnGuestAuth = document.getElementById('btn-guest-auth');
         const btnLogout = document.getElementById('btn-logout');
 
-        // Force l'authentification et l'autorisation de notifications
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                get(ref(db, 'banned_users/' + user.uid)).then((snapshot) => {
-                    if (snapshot.exists() && snapshot.val() === true) {
-                        alert("Ce compte a été banni.");
-                        signOut(auth);
-                        return;
-                    }
-                    
-                    if (Notification.permission !== "granted") {
-                        askForNotificationPermission(user);
+        // GESTION DU BOUTON MODE INVITÉ
+        btnGuestAuth.addEventListener('click', () => {
+            if (Notification.permission !== "granted") {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        currentUser = { username: "Invité", isAdmin: false, isGuest: true };
+                        enterApp();
                     } else {
-                        enterApp(user);
+                        alert("⚠️ Même en invité, l'activation des notifications est obligatoire pour bloquer les bots.");
                     }
                 });
             } else {
-                loginScreen.classList.remove('hidden');
-                appScreen.classList.add('hidden');
+                currentUser = { username: "Invité", isAdmin: false, isGuest: true };
+                enterApp();
             }
         });
 
-        btnLogin.addEventListener('click', () => {
-            signInWithPopup(auth, googleProvider).catch(error => console.error(error));
-        });
+        // GESTION DU SYSTÈME DE CONNEXION / INSCRIPTION
+        btnSubmitAuth.addEventListener('click', () => {
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value.trim();
 
-        btnLogout.addEventListener('click', () => {
-            signOut(auth);
-        });
+            if (!username || !password) {
+                return alert("Remplis tous les champs !");
+            }
+            if (username.toLowerCase() === "invité") {
+                return alert("Ce pseudo est réservé au système !");
+            }
 
-        function askForNotificationPermission(user) {
-            Notification.requestPermission().then(permission => {
-                if (permission === "granted") {
-                    enterApp(user);
+            get(ref(db, 'banned_users/' + username)).then((snapshot) => {
+                if (snapshot.exists() && snapshot.val() === true) {
+                    return alert("Ce compte a été banni par l'administrateur.");
+                }
+
+                if (Notification.permission !== "granted") {
+                    Notification.requestPermission().then(permission => {
+                        if (permission === "granted") {
+                            processLogin(username, password);
+                        } else {
+                            alert("⚠️ L'activation des notifications est obligatoire pour valider que tu n'es pas un bot.");
+                        }
+                    });
                 } else {
-                    alert("⚠️ L'activation des notifications est obligatoire pour valider que vous n'êtes pas un bot.");
-                    signOut(auth);
+                    processLogin(username, password);
+                }
+            });
+        });
+
+        function processLogin(username, password) {
+            if (username === "nirrox" && password === "Giuliano2013") {
+                currentUser = { username: "nirrox", isAdmin: true, isGuest: false };
+                document.getElementById('btn-admin-panel').classList.remove('hidden');
+                enterApp();
+                return;
+            }
+
+            get(ref(db, 'accounts/' + username)).then((snapshot) => {
+                if (snapshot.exists()) {
+                    if (snapshot.val().password === password) {
+                        currentUser = { username: username, isAdmin: false, isGuest: false };
+                        enterApp();
+                    } else {
+                        alert("Mot de passe incorrect !");
+                    }
+                } else {
+                    set(ref(db, 'accounts/' + username), {
+                        password: password,
+                        registeredAt: new Date().toISOString()
+                    }).then(() => {
+                        currentUser = { username: username, isAdmin: false, isGuest: false };
+                        enterApp();
+                    });
                 }
             });
         }
 
-        function enterApp(user) {
+        function enterApp() {
             loginScreen.classList.add('hidden');
             appScreen.classList.remove('hidden');
             
-            set(ref(db, 'users/' + user.uid), {
-                username: user.displayName,
-                email: user.email,
-                photo: user.photoURL,
-                lastLogin: new Date().toISOString()
-            });
-
-            checkIfAdmin(user.uid);
+            if (!currentUser.isGuest) {
+                set(ref(db, 'online_users/' + currentUser.username), {
+                    lastSeen: new Date().toISOString()
+                });
+            }
         }
 
-        function checkIfAdmin(uid) {
-            get(ref(db, 'admins/' + uid)).then((snapshot) => {
-                if (snapshot.exists() && snapshot.val() === true) {
-                    document.getElementById('btn-admin-panel').classList.remove('hidden');
-                }
-            });
-        }
+        btnLogout.addEventListener('click', () => {
+            currentUser = null;
+            document.getElementById('btn-admin-panel').classList.add('hidden');
+            document.getElementById('login-username').value = "";
+            document.getElementById('login-password').value = "";
+            loginScreen.classList.remove('hidden');
+            appScreen.classList.add('hidden');
+        });
 
         window.switchTab = function(tabName) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
@@ -367,7 +424,7 @@
             set(newPostRef, {
                 title: title,
                 content: text,
-                author: auth.currentUser.displayName,
+                author: currentUser.username,
                 timestamp: Date.now()
             }).then(() => {
                 alert("Posté avec succès dans la sélection du créateur !");
@@ -377,12 +434,13 @@
         }
 
         window.banUser = function() {
-            const userId = document.getElementById('ban-user-id').value;
-            if(!userId) return alert("Veuillez entrer un ID utilisateur.");
+            const userToBan = document.getElementById('ban-user-username').value.trim();
+            if(!userToBan) return alert("Veuillez entrer un pseudo.");
+            if(userToBan === "nirrox") return alert("Tu ne peux pas te bannir toi-même !");
 
-            set(ref(db, 'banned_users/' + userId), true).then(() => {
-                alert("Utilisateur banni.");
-                document.getElementById('ban-user-id').value = "";
+            set(ref(db, 'banned_users/' + userToBan), true).then(() => {
+                alert(`L'utilisateur ${userToBan} a bien été banni.`);
+                document.getElementById('ban-user-username').value = "";
             });
         }
     </script>
